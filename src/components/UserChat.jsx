@@ -7,6 +7,11 @@ import { Box, Grid, TextField, Button, IconButton, Typography, InputAdornment, T
 import ChartModal from './ChartModal';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SuggestedPrompts from '../components/SuggestedPrompts';
+import { format as sqlFormatter } from 'sql-formatter';
+import hljs from 'highlight.js/lib/core';
+import sql from 'highlight.js/lib/languages/sql';
+
+hljs.registerLanguage('sql', sql);
 
 function UserChat(props) {
   const theme = useTheme();
@@ -149,6 +154,234 @@ function UserChat(props) {
         return String(input);
       };
 
+      let isSQLResponse = false;
+      // Determine how to handle the response
+      let modelReply = 'No valid reply found.'; // Default message
+      if (data.modelreply) {
+        // Check if the response is a JSON array of objects
+        if (Array.isArray(data.modelreply) && data.modelreply.every(item => typeof item === 'object')) {
+          const columnCount = Object.keys(data.modelreply[0]).length;
+          const rowCount = data.modelreply.length;
+          // Convert to table-like format with borders for display
+          modelReply = (
+            <div style={{ display: 'flex', alignItems: 'start' }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                  <tr>
+                    {Object.keys(data.modelreply[0]).map((key) => (
+                      <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.modelreply.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {Object.values(row).map((val, colIndex) => (
+                        <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(rowCount > 1 && columnCount > 1) && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<BarChartIcon />}
+                  sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
+                  onClick={handleGraphClick}
+                >
+                  Graph View
+                </Button>
+              )}
+            </div>
+          );
+        } else if (typeof data.modelreply === 'string') {
+          const sqlRegex = /```sql([\s\S]*?)```/g;
+          const parts = [];
+          let lastIndex = 0;
+          let match;
+
+          // Split the response into SQL and text
+          while ((match = sqlRegex.exec(data.modelreply)) !== null) {
+            // Add the text before the SQL block
+            if (match.index > lastIndex) {
+              parts.push(
+                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
+                  {data.modelreply.slice(lastIndex, match.index).trim()}
+                </p>
+              );
+            }
+
+            // Format the SQL block
+            const sqlContent = match[1].trim();
+            try {
+              parts.push(
+                <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
+                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {sqlFormatter(sqlContent)}
+                  </code>
+                </pre>
+              );
+            } catch (err) {
+              console.error("SQL Formatting Error:", err);
+              parts.push(
+                <pre key={`sql-${match.index}`} style={{ margin: '8px 0', color: 'red' }}>
+                  {sqlContent}
+                </pre>
+              );
+            }
+
+            lastIndex = sqlRegex.lastIndex;
+          }
+         
+          if (lastIndex < data.modelreply.length) {
+            const remainingContent = data.modelreply.slice(lastIndex).trim();
+            if (/SELECT|WHERE|FROM/i.test(remainingContent)) {
+              // Treat remaining content as SQL
+              try {
+                parts.push(
+                  <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
+                    <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {sqlFormatter(remainingContent)}
+                    </code>
+                  </pre>
+                );
+              } catch (err) {
+                console.error("SQL Formatting Error:", err);
+                parts.push(
+                  <pre key={`sql-remaining`} style={{ margin: '8px 0', color: 'red' }}>
+                    {remainingContent}
+                  </pre>
+                );
+              }
+            } else {
+              // Add remaining text as-is
+              parts.push(
+                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
+                  {remainingContent}
+                </p>
+              );
+            }
+          }
+
+
+          modelReply = (
+            <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
+              {parts}
+            </div>
+          );
+          modelReply =  data.modelreply;
+        } else {
+          // Otherwise, convert to string
+          modelReply = convertToString(data.modelreply);
+          const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
+          setChatLog([...newChatLog, botMessage]);
+        }
+      }
+
+    } catch (err) {
+      let fallbackErrorMessage = 'Error communicating with backend.';
+      const errorMessage = {
+        role: 'assistant',
+        content: (
+          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{fallbackErrorMessage}</p>
+          </div>
+        ),
+      };
+
+      setChatLog([...newChatLog, errorMessage]);
+      setError('Error communicating with backend');
+      console.error('Error:', err);
+    } finally {
+      setIsLoading(false); // Set loading state to false
+    }
+  }
+
+  const handleInputFocusOrChange = () => {
+    setShowInitialView(false);
+    resetInactivityTimeout();
+  };
+
+  useEffect(() => {
+    resetInactivityTimeout();
+    return () => {
+      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
+    };
+  }, []);
+
+  const handlePromptClick = async (prompt) => {
+    const newMessage = {
+      role: 'user',
+      content: prompt,
+    };
+    const newChatLog = [...chatLog, newMessage];
+    setChatLog(newChatLog);
+    setInput('');
+    setIsLoading(true);
+    setResponseReceived(false);
+    setError('');
+    setShowInitialView(false);
+ 
+    try {
+      // Send the new message to the API
+      const response = await fetch(
+        `${apiPath}?app_cd=${appCd}&request_id=${requestId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newChatLog)
+        }
+      );
+       // Check if response is okay
+       if (!response.ok) {
+        let errorMessage = '';
+
+        // Handle different status codes
+        if (response.status === 404) {
+          errorMessage = '404 - Not Found';
+        } else if (response.status === 500) {
+          errorMessage = '500 - Internal Server Error';
+        } else {
+          errorMessage = `${response.status} - ${response.statusText}`;
+        }
+
+        // // Display the image and error message
+        const botMessage = {
+          role: 'assistant',
+          content: (
+            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+              <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{errorMessage}</p>
+            </div>
+          ),
+        };
+
+        setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
+        throw new Error(errorMessage); // Re-throw the error for logging purposes
+      }
+
+      const data = await response.json();
+      setApiResponse(data);
+
+      // Function to convert object to string (if needed)
+      const convertToString = (input) => {
+        if (typeof input === 'string') {
+          return input;
+        } else if (Array.isArray(input)) {
+          // Recursively convert array items
+          return input.map(convertToString).join(', ');
+        } else if (typeof input === 'object' && input !== null) {
+          // Convert key-value pairs
+          return Object.entries(input)
+            .map(([key, value]) => `${key}: ${convertToString(value)}`)
+            .join(', ');
+        }
+        return String(input);
+      };
+
       // Determine how to handle the response
       let modelReply = 'No valid reply found.'; // Default message
       if (data.modelreply) {
@@ -222,73 +455,6 @@ function UserChat(props) {
       setIsLoading(false); // Set loading state to false
     }
   }
-
-  const handleInputFocusOrChange = () => {
-    setShowInitialView(false);
-    resetInactivityTimeout();
-  };
-
-  useEffect(() => {
-    resetInactivityTimeout();
-    return () => {
-      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
-    };
-  }, []);
-
-  const handlePromptClick = async (prompt) => {
-    const newMessage = {
-      role: 'user',
-      content: prompt,
-    };
-    const newChatLog = [...chatLog, newMessage];
-    setChatLog(newChatLog);
-    setInput('');
-    setIsLoading(true);
-    setResponseReceived(false);
-    setError('');
-    setShowInitialView(false);
- 
-    try {
-      // Send the new message to the API
-      const response = await fetch(
-        `http://10.126.192.122:8000/get_llm_response/?app_cd=${appCd}&request_id=${requestId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newChatLog)
-        }
-      );
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      //const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
-      //setResId(newResId);
-      // Handle route_cd change
-     
-        // Add the assistant's response to the chat log
-        const botMessage = {
-          role: 'assistant',
-          content: data.modelreply, // Assuming modelreply contains the bot's response
-        };
-        setChatLog(prevChatLog => [...prevChatLog, botMessage]); // Update chat log with bot's response
-     
-    } catch (err) {
-      // Create an error message object
-      const errorMessage = {
-        role: 'assistant',
-        content: 'Unable to fetch data from the server ...', // Error message
-      };
-      // Update the chat log with the error message
-      setChatLog(prevChatLog => [...prevChatLog, errorMessage]); // Add error message to chat log
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-      setResponseReceived(true); // Set loading state to false
-    }
-  };
 
   return (
 
