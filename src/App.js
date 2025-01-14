@@ -18,7 +18,7 @@ function App() {
     themeColor="#1a3673"
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
-    apiPath="http://10.126.192.122:3020/get_llm_response/"
+    apiPath="http://localhost:8000/get_llm_response/"
     appCd="Chat_bot"
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
