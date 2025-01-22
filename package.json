@@ -2,6 +2,7 @@
   "name": "eda_chatassistant",
   "version": "0.3.2",
   "main": "dist/index.js",
+  "proxy": "http://your-api-domain.com",
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -18,6 +19,7 @@
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.1",
     "highlight.js": "^11.10.0",
+    "http-proxy-middleware": "^3.0.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-icons": "^5.3.0",

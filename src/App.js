@@ -11,6 +11,9 @@ function App() {
     "Find total procedure count by HCC for incurred period 202409?",
     "For commercial market, Show Paid expense PMPM by mbu for incurred period 202409"
   ]);
+
+  const apiBaseUrl = process.env.REACT_APP_API_URL;
+
   return (
     <div >
     <Dashboard
@@ -18,7 +21,7 @@ function App() {
     themeColor="#1a3673"
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
-    apiPath="http://10.126.192.122:8010/get_llm_response/"
+    apiPath={`${apiBaseUrl}/get_llm_response/`} 
     appCd="Chat_bot"
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
