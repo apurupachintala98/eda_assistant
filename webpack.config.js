@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'production',
+  mode: 'production', // Change to 'development' if needed
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -15,17 +15,17 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: 'babel-loader',
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react'],
+          },
+        },
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg)$/,
-        loader: 'file-loader',
-        options: {
-           name: '[name].[hash].[ext]',
-           outputPath: 'images',
-           publicPath: 'images',
-        },
-     },
+        type: 'asset/resource', // Uses the new asset module feature for images
+      },
     ],
   },
   resolve: {
@@ -35,4 +35,5 @@ module.exports = {
     react: 'react',
     'react-dom': 'react-dom',
   },
+  devtool: 'source-map', // Optional: Include source maps for easier debugging
 };
