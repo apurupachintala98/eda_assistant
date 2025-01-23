@@ -2,7 +2,7 @@
   "name": "eda_chatassistant",
   "version": "0.3.2",
   "main": "dist/index.js",
-  "proxy": "http://your-api-domain.com",
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -20,8 +20,8 @@
     "highcharts-react-official": "^3.2.1",
     "highlight.js": "^11.10.0",
     "http-proxy-middleware": "^3.0.3",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-scripts": "5.0.1",
     "react-spinners": "^0.14.1",
@@ -56,7 +56,8 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
-    "@babel/preset-react": "^7.25.9",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^9.2.1",
     "file-loader": "^6.2.0",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
