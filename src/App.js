@@ -4,15 +4,26 @@ import Dashboard from './components/Dashboard';
 import logo from './images/logo.png';
 import user from './images/user.png';
 import chatbot from './images/chatbot.png';
+import axios from "axios";
 
 function App() {
+  const [data, setData] = useState(null);
   const [suggestedPrompts, setSuggestedPrompts] = useState([
     "Show total membership by lob for incurred month 202409",
     "Find total procedure count by HCC for incurred period 202409?",
     "For commercial market, Show Paid expense PMPM by mbu for incurred period 202409"
   ]);
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL;
+  // Define the backend URL dynamically based on the frontend's protocol
+  const backendBaseUrl = "http://your-http-backend.com";
+
+  useEffect(() => {
+    axios
+      .get(`${backendBaseUrl}/api/data`) // Adjust endpoint accordingly
+      .then((response) => setData(response.data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
 
   return (
     <div >
@@ -21,7 +32,7 @@ function App() {
     themeColor="#1a3673"
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
-    apiPath={`${apiBaseUrl}/get_llm_response/`} 
+    apiPath={/get_llm_response/} 
     appCd="Chat_bot"
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
