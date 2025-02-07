@@ -17,13 +17,6 @@ function App() {
   // Define the backend URL dynamically based on the frontend's protocol
   const backendBaseUrl = "http://your-http-backend.com";
 
-  useEffect(() => {
-    axios
-      .get(`${backendBaseUrl}/api/data`) // Adjust endpoint accordingly
-      .then((response) => setData(response.data))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
-
 
   return (
     <div >
@@ -32,7 +25,7 @@ function App() {
     themeColor="#1a3673"
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
-    apiPath={/get_llm_response/} 
+    apiPath={`${backendBaseUrl}/get_llm_response`} 
     appCd="Chat_bot"
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
