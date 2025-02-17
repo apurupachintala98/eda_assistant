@@ -4,7 +4,6 @@ import Dashboard from './components/Dashboard';
 import logo from './images/logo.png';
 import user from './images/user.png';
 import chatbot from './images/chatbot.png';
-import axios from "axios";
 
 function App() {
   const [data, setData] = useState(null);
@@ -15,7 +14,7 @@ function App() {
   ]);
 
   // Define the backend URL dynamically based on the frontend's protocol
-  const backendBaseUrl = "http://your-http-backend.com";
+  const backendBaseUrl = "http://10.126.192.122:8010";
 
 
   return (
