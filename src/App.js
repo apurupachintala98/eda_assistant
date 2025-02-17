@@ -25,6 +25,7 @@ function App() {
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
     apiPath={`${backendBaseUrl}/get_llm_response`} 
+    sqlUrl={`${backendBaseUrl}/run_sql_query/`}
     appCd="Chat_bot"
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
