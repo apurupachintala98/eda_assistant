@@ -28,31 +28,41 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedRes
 
   useEffect(() => {
     chatLog.forEach((chat, i) => {
-      let content = chat.content;
-      let currentContent = '';
-      let index = 0;
+      if (chat.role === 'assistant') {
+        let content = chat.content;
+        let currentContent = '';
+        let index = 0;
 
-      const intervalId = setInterval(() => {
-        if (index < content.length) {
-          currentContent += content.charAt(index);
-          index++;
-          setDisplayedChats((prevChats) => {
-            let newChats = [...prevChats];
-            if (newChats[i]) {
-              newChats[i] = { ...newChats[i], content: currentContent };
-            } else {
-              newChats[i] = { ...chat, content: currentContent };
-            }
-            return newChats;
-          });
-        } else {
-          clearInterval(intervalId);
-        }
-      }, 50); // Adjust this to control speed of text streaming
+        const intervalId = setInterval(() => {
+          if (index < content.length) {
+            currentContent += content.charAt(index);
+            index++;
+            setDisplayedChats((prevChats) => {
+              let newChats = [...prevChats];
+              if (newChats[i]) {
+                newChats[i] = { ...newChats[i], content: currentContent };
+              } else {
+                newChats[i] = { ...chat, content: currentContent };
+              }
+              return newChats;
+            });
+          } else {
+            clearInterval(intervalId);
+          }
+        }, 50); // Adjust this to control speed of text streaming
 
-      return () => clearInterval(intervalId);
+        return () => clearInterval(intervalId);
+      } else {
+        // For user messages, display immediately without streaming
+        setDisplayedChats(prevChats => {
+          let newChats = [...prevChats];
+          newChats[i] = { ...chat };
+          return newChats;
+        });
+      }
     });
   }, [chatLog]); // Re-run effect only when chatLog changes
+
 
   return (
     <Box sx={{ width: '100%', padding: '10px 0' }}>
