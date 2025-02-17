@@ -510,10 +510,10 @@ function UserChat(props) {
           );
           const raw =  data.modelreply;
           setRawResponse(raw);
-          setStoredResponse(modelReply)
+          // setStoredResponse(modelReply)
           // setStoredResponse(modelReply);
-          setShowButton(true); // Show "Show SQL" button
-          setShowExecuteButton(true); // Show "Execute SQL" button
+          // setShowButton(true); // Show "Show SQL" button
+          // setShowExecuteButton(true); // Show "Execute SQL" button
         } else {
           // Otherwise, convert to string
           modelReply = convertToString(data.modelreply);
