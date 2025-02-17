@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Avatar, Box, Typography, Paper } from '@mui/material';
 import chatbot from '../images/chatbot.png';
 import user from '../images/user.png';
+import hljs from 'highlight.js/lib/core';
+import sql from 'highlight.js/lib/languages/sql';
+import 'highlight.js/styles/github.css';
+
+hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
   if (!response) return '';
@@ -14,7 +19,11 @@ const formatApiResponse = (response) => {
   });
 };
 
-const ChatMessage = ({ chatLog, chatbotImage, userImage }) => {
+const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
+  useEffect(() => {
+    hljs.highlightAll();
+  }, [chatLog, showResponse]);
+
   const [displayedChats, setDisplayedChats] = useState([]);
 
   useEffect(() => {
@@ -44,6 +53,7 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage }) => {
       return () => clearInterval(intervalId);
     });
   }, [chatLog]); // Re-run effect only when chatLog changes
+
   return (
     <Box sx={{ width: '100%', padding: '10px 0' }}>
       {displayedChats.map((chat, index) => (
@@ -67,7 +77,7 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage }) => {
               color: '#1a3673',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {chat.role === 'assistant' ? (
                 <img
                   src={chatbotImage}
@@ -90,7 +100,37 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage }) => {
                   style={{ width: 32, height: 32, borderRadius: '50%', marginLeft: '8px' }}
                 />
               ) : null}
+            </Box> */}
+
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {chat.role === 'assistant' ? (
+                <img
+                  src={chatbotImage}
+                  alt="Chatbot"
+                  style={{ width: 32, height: 32, borderRadius: '50%', marginRight: '8px' }}
+                />
+              ) : null}
+              <Typography
+                variant="body2"
+                sx={{ fontSize: 14, fontWeight: 'bold', whiteSpace: 'pre-line' }}
+              >
+                {chat.isSQLResponse ? (
+                  <pre><code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
+                ) : (
+                  chat.role === 'assistant'
+                    ? formatApiResponse(chat.content)
+                    : chat.content
+                )}
+              </Typography>
+              {chat.role === 'user' ? (
+                <img
+                  src={userImage}
+                  alt="User"
+                  style={{ width: 32, height: 32, borderRadius: '50%', marginLeft: '8px' }}
+                />
+              ) : null}
             </Box>
+
           </Paper>
         </Box>
       ))}
