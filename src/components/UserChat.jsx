@@ -508,8 +508,11 @@ function UserChat(props) {
               {parts}
             </div>
           );
-          const raw =  data.modelreply;
-          setRawResponse(raw);
+
+          modelReply = data.modelreply;
+
+          // const raw =  data.modelreply;
+          // setRawResponse(raw);
           // setStoredResponse(modelReply)
           // setStoredResponse(modelReply);
           // setShowButton(true); // Show "Show SQL" button
