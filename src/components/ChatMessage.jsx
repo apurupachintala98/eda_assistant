@@ -9,8 +9,10 @@ import 'highlight.js/styles/github.css';
 hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
-  // Check for null or undefined response first
-  if (response == null) return '';
+  // Check for null or undefined response first and handle uniformly
+  if (response == null) {
+    return <p>No data available</p>;
+  }
 
   if (typeof response === 'string') {
     // Detect URLs within the text
@@ -25,6 +27,9 @@ const formatApiResponse = (response) => {
     });
   } else if (Array.isArray(response)) {
     // Handle arrays, specifically for cases like the medical codes
+    if (response.length === 0) {
+      return <p>No data available</p>;
+    }
     const headers = response[0] ? Object.keys(response[0]) : [];
     return (
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
@@ -49,6 +54,10 @@ const formatApiResponse = (response) => {
       </table>
     );
   } else if (typeof response === 'object') {
+    // Check for empty object
+    if (Object.keys(response).length === 0) {
+      return <p>No data available</p>;
+    }
     return Object.keys(response).map((key, index) => {
       if (response[key] == null) {
         return (
@@ -94,8 +103,6 @@ const formatApiResponse = (response) => {
     return String(response);
   }
 };
-
-
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
