@@ -10,7 +10,7 @@ hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
   if (!response) return '';
-  
+
   // Check if the response is a string before trying to process it as such
   if (typeof response === 'string') {
     // Replace **text** with bold markup
@@ -21,14 +21,25 @@ const formatApiResponse = (response) => {
       return part;
     });
   } else if (typeof response === 'object' && response !== null) {
-    // If the response is an object, you might want to convert it to a JSON string
-    // or handle it appropriately depending on the context
-    return <pre>{JSON.stringify(response, null, 2)}</pre>;
+    // Convert object to a table if it's an object
+    return (
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <tbody>
+          {Object.entries(response).map(([key, value], index) => (
+            <tr key={index}>
+              <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{key}</td>
+              <td style={{ border: '1px solid black', padding: '8px' }}>{JSON.stringify(value)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
   } else {
     // If it's neither a string nor an object, convert to string
     return String(response);
   }
 };
+
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
