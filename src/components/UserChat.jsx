@@ -104,7 +104,7 @@ function UserChat(props) {
             'Content-Type': 'application/json',
           },
           // body: JSON.stringify([newMessage]),
-          body: JSON.stringify([newChatLog])
+          body: JSON.stringify(newChatLog)
         }
       );
       if (!response.ok) {
