@@ -11,6 +11,7 @@ hljs.registerLanguage('sql', sql);
 const formatApiResponse = (response) => {
   // Check for null or undefined response first
   if (response == null) return '';
+
   if (typeof response === 'string') {
     // Detect URLs within the text
     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Simple regex for URLs
@@ -22,7 +23,22 @@ const formatApiResponse = (response) => {
       }
       return part;
     });
-  } else if (typeof response === 'object' && !Array.isArray(response)) {
+  } else if (Array.isArray(response)) {
+    // Handle arrays, specifically for cases like the medical codes
+    return (
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+        <tbody>
+          {response.map((item, index) => (
+            <tr key={index}>
+              {Object.entries(item).map(([key, value], subIndex) => (
+                <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{`${key}: ${value}`}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  } else if (typeof response === 'object') {
     return Object.keys(response).map((key, index) => {
       if (response[key] == null) {
         return (
@@ -68,6 +84,7 @@ const formatApiResponse = (response) => {
     return String(response);
   }
 };
+
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
