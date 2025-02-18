@@ -9,12 +9,31 @@ import 'highlight.js/styles/github.css';
 hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
-  if (!response) return '';
+  // Check for null or undefined response first
+  if (response == null) return '';
 
-  // Check if the response is an object and not an array
-  if (typeof response === 'object' && response !== null && !Array.isArray(response)) {
+  // Handle strings with markdown for bold
+  if (typeof response === 'string') {
+    // Process string responses that may include markdown-like **bold** syntax
+    return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
+      }
+      return part;
+    });
+  } else if (typeof response === 'object' && !Array.isArray(response)) {
+    // Render each top-level key in the response object as a separate table
     return Object.keys(response).map((key, index) => {
-      // Check if the object's value is another simple object or a more complex nested structure
+      // Ensure the value is neither undefined nor null before processing
+      if (response[key] == null) {
+        return (
+          <div key={index}>
+            <h3>{key}</h3>
+            <p>Unavailable data</p>
+          </div>
+        );
+      }
+
       const valueIsSimple = Object.values(response[key]).every(
         item => typeof item !== 'object' || item === null
       );
@@ -25,14 +44,12 @@ const formatApiResponse = (response) => {
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
             <tbody>
               {valueIsSimple ?
-                // Render simple key-value pairs directly
                 Object.entries(response[key]).map(([subKey, value], subIndex) => (
                   <tr key={subIndex}>
                     <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
                     <td style={{ border: '1px solid black', padding: '8px' }}>{value.toString()}</td>
                   </tr>
                 )) :
-                // Handle nested objects or more complex data
                 Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
                   <tr key={subIndex}>
                     <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
@@ -47,16 +64,8 @@ const formatApiResponse = (response) => {
         </div>
       );
     });
-  } else if (typeof response === 'string') {
-    // Handle strings with markdown for bold
-    return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
-      }
-      return part;
-    });
   } else {
-    // Convert other types to string
+    // Convert other non-object, non-string types to string
     return String(response);
   }
 };
