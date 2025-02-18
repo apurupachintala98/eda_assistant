@@ -11,52 +11,55 @@ hljs.registerLanguage('sql', sql);
 const formatApiResponse = (response) => {
   if (!response) return '';
 
-  // Handle strings with markdown for bold
-  if (typeof response === 'string') {
+  // Check if the response is an object and not an array
+  if (typeof response === 'object' && response !== null && !Array.isArray(response)) {
+    return Object.keys(response).map((key, index) => {
+      // Check if the object's value is another simple object or a more complex nested structure
+      const valueIsSimple = Object.values(response[key]).every(
+        item => typeof item !== 'object' || item === null
+      );
+
+      return (
+        <div key={index}>
+          <h3>{key}</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+            <tbody>
+              {valueIsSimple ?
+                // Render simple key-value pairs directly
+                Object.entries(response[key]).map(([subKey, value], subIndex) => (
+                  <tr key={subIndex}>
+                    <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+                    <td style={{ border: '1px solid black', padding: '8px' }}>{value.toString()}</td>
+                  </tr>
+                )) :
+                // Handle nested objects or more complex data
+                Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
+                  <tr key={subIndex}>
+                    <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+                    <td style={{ border: '1px solid black', padding: '8px' }}>
+                      {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      );
+    });
+  } else if (typeof response === 'string') {
+    // Handle strings with markdown for bold
     return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
       }
       return part;
     });
-  } else if (Array.isArray(response)) {
-    // If the response is an array, render a table for each object in the array
-    return response.map((obj, idx) => (
-      <div key={idx}>
-        <h3>Object {idx + 1}</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-          <tbody>
-            {Object.entries(obj).map(([key, value], index) => (
-              <tr key={index}>
-                <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{key}</td>
-                <td style={{ border: '1px solid black', padding: '8px' }}>{JSON.stringify(value)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ));
-  } else if (typeof response === 'object' && response !== null) {
-    // If the response is a single object, render a single table
-    return (
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <tbody>
-          {Object.entries(response).map(([key, value], index) => (
-            <tr key={index}>
-              <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{key}</td>
-              <td style={{ border: '1px solid black', padding: '8px' }}>{JSON.stringify(value)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
   } else {
     // Convert other types to string
     return String(response);
   }
 };
-
-
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
