@@ -11,17 +11,33 @@ hljs.registerLanguage('sql', sql);
 const formatApiResponse = (response) => {
   if (!response) return '';
 
-  // Check if the response is a string before trying to process it as such
+  // Handle strings with markdown for bold
   if (typeof response === 'string') {
-    // Replace **text** with bold markup
     return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
       }
       return part;
     });
+  } else if (Array.isArray(response)) {
+    // If the response is an array, render a table for each object in the array
+    return response.map((obj, idx) => (
+      <div key={idx}>
+        <h3>Object {idx + 1}</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+          <tbody>
+            {Object.entries(obj).map(([key, value], index) => (
+              <tr key={index}>
+                <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{key}</td>
+                <td style={{ border: '1px solid black', padding: '8px' }}>{JSON.stringify(value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ));
   } else if (typeof response === 'object' && response !== null) {
-    // Convert object to a table if it's an object
+    // If the response is a single object, render a single table
     return (
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <tbody>
@@ -35,10 +51,11 @@ const formatApiResponse = (response) => {
       </table>
     );
   } else {
-    // If it's neither a string nor an object, convert to string
+    // Convert other types to string
     return String(response);
   }
 };
+
 
 
 
