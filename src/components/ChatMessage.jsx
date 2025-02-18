@@ -25,13 +25,23 @@ const formatApiResponse = (response) => {
     });
   } else if (Array.isArray(response)) {
     // Handle arrays, specifically for cases like the medical codes
+    const headers = response[0] ? Object.keys(response[0]) : [];
     return (
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+        <thead>
+          <tr>
+            {headers.map((header, index) => (
+              <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
         <tbody>
           {response.map((item, index) => (
             <tr key={index}>
               {Object.entries(item).map(([key, value], subIndex) => (
-                <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{`${key}: ${value}`}</td>
+                <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
               ))}
             </tr>
           ))}
@@ -84,6 +94,7 @@ const formatApiResponse = (response) => {
     return String(response);
   }
 };
+
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
