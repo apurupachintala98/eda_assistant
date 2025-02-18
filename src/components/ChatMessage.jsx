@@ -10,14 +10,26 @@ hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
   if (!response) return '';
-  // Replace **text** with bold markup
-  return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
-    }
-    return part;
-  });
+  
+  // Check if the response is a string before trying to process it as such
+  if (typeof response === 'string') {
+    // Replace **text** with bold markup
+    return response.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
+      }
+      return part;
+    });
+  } else if (typeof response === 'object' && response !== null) {
+    // If the response is an object, you might want to convert it to a JSON string
+    // or handle it appropriately depending on the context
+    return <pre>{JSON.stringify(response, null, 2)}</pre>;
+  } else {
+    // If it's neither a string nor an object, convert to string
+    return String(response);
+  }
 };
+
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
