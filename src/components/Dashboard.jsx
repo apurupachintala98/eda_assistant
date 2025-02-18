@@ -18,12 +18,17 @@ const Dashboard = ({
   onNewChat,
   apiPath,
   sqlUrl,
-  appCd,
+  aplctn_cd,
+  app_id,
+  edadip_api_key,
+  method,
+  model,
+  context,
   chatInitialMessage = "Hello there, I am your Chat Assistant. How can I help you today?",
   customStyles = {},
-  chatbotImage= chatbotImageD,
+  chatbotImage = chatbotImageD,
   suggestedPrompts,
-  userImage= userImageD
+  userImage = userImageD
 }) => {
   const isMobile = useMediaQuery("(max-width:950px)");
   const [chatLog, setChatLog] = useState([]);
@@ -32,7 +37,7 @@ const Dashboard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showInitialView, setShowInitialView] = useState(true);
-  const [requestId, setRequestId] = useState(uuidv4());
+  const [sessionId, setRequestId] = useState(uuidv4());
   const [showExecuteButton, setShowExecuteButton] = useState(false);
   const [showButton, setShowButton] = useState(false); // New state to show/hide the button
 
@@ -139,10 +144,15 @@ const Dashboard = ({
               showInitialView={showInitialView}
               setShowInitialView={setShowInitialView}
               themeColor={themeColor}
-              requestId={requestId}
+              sessionId={sessionId}
               setRequestId={setRequestId}
               apiPath={apiPath}
-              appCd={appCd}
+              aplctn_cd={aplctn_cd}
+              app_id={app_id}
+              edadip_api_key={edadip_api_key}
+              method={method}
+              model={model}
+              context={context}
               customStyles={customStyles.chat}
               chatInitialMessage={chatInitialMessage}
               chatbotImage={chatbotImage}

@@ -14,8 +14,8 @@ function App() {
   ]);
 
   // Define the backend URL dynamically based on the frontend's protocol
-  const backendBaseUrl = "http://10.126.192.122:8010";
-
+  // const backendBaseUrl = "http://10.126.192.122:8010";
+    const backendBaseUrl = "https://sfassist.edagenaidev.awsdns.internal.das/";
 
   return (
     <div >
@@ -24,9 +24,14 @@ function App() {
     themeColor="#1a3673"
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
-    apiPath={`${backendBaseUrl}/get_llm_response`} 
+    apiPath={`${backendBaseUrl}api/cortex/complete/`} 
     // sqlUrl={`${backendBaseUrl}/run_sql_query/`}
-    appCd="Chat_bot"
+    aplctn_cd="edagnai"
+    app_id="edadip"
+    edadip_api_key="78a799ea-a0f6-11ef-a0ce-15a449f7a8b0"
+    method="cortex"
+    model="llama3.3-70b"
+    context="You are powerful AI assistant in providing accurate answers always. Be Concise in providing answers based on context."
     chatbotImage={chatbot}
     suggestedPrompts={suggestedPrompts}
     userImage={user}

@@ -27,7 +27,8 @@ function UserChat(props) {
     isLoading, setIsLoading,
     successMessage, setSuccessMessage,
     showInitialView, setShowInitialView,
-    requestId, setRequestId, apiPath, appCd, sqlUrl, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton
+    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton, app_id,
+    edadip_api_key, method, model, context,
   } = props;
 
   const endOfMessagesRef = useRef(null);
@@ -79,7 +80,7 @@ function UserChat(props) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!input.trim()) return;
-    if (!appCd.trim() || !requestId.trim()) {
+    if (!aplctn_cd.trim() || !sessionId.trim()) {
       setError('Please provide valid app_cd and request_id.');
       return;
     }
@@ -95,16 +96,25 @@ function UserChat(props) {
     setShowInitialView(false);
     setShowResponse(false);
     try {
-      const url = `${apiPath}?app_cd=${appCd}&request_id=${requestId}`;
+      const payload = {
+        aplctn_cd: aplctn_cd,
+        app_id: app_id,
+        session_Id: sessionId,
+        edadip_api_key: edadip_api_key,
+        method: method,
+        model: model,
+        context: context,
+        prompt: newChatLog
+      };
+      const url = `${apiPath}`;
       const response = await fetch(
         url,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          // body: JSON.stringify([newMessage]),
-          body: JSON.stringify(newChatLog)
+          body: JSON.stringify(payload)
         }
       );
       if (!response.ok) {
@@ -330,14 +340,25 @@ function UserChat(props) {
 
     try {
       // Send the new message to the API
+      const payload = {
+        aplctn_cd: aplctn_cd,
+        app_id: app_id,
+        session_Id: sessionId,
+        edadip_api_key: edadip_api_key,
+        method: method,
+        model: model,
+        context: context,
+        prompt: newChatLog
+      };
+
       const response = await fetch(
-        `${apiPath}?app_cd=${appCd}&request_id=${requestId}`,
+        `${apiPath}`,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(newChatLog)
+          body: JSON.stringify(payload)
         }
       );
       if (!response.ok) {
@@ -387,8 +408,8 @@ function UserChat(props) {
       let modelReply = 'No valid reply found.'; // Default message
       if (data.modelreply) {
         // Check if the response is a JSON array of objects
-         // Handling object with nested objects scenario
-         if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
+        // Handling object with nested objects scenario
+        if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
           // Generate table from nested object data
           const keys = Object.keys(data.modelreply);
           const columns = Object.keys(data.modelreply[keys[0]]); // assuming uniform structure
