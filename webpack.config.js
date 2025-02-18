@@ -26,6 +26,10 @@ module.exports = {
         test: /\.(png|jpg|jpeg|gif|svg)$/,
         type: 'asset/resource', // Uses the new asset module feature for images
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+    },
     ],
   },
   resolve: {
