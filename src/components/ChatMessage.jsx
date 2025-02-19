@@ -19,11 +19,16 @@ const formatApiResponse = (response) => {
     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Simple regex for URLs
     return (
       <div>
-        {response.split(/(\*\*.*?\*\*)|(\bhttps?:\/\/\S+\b)/g).map((part, index) => {
+        {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
           if (part && part.match(/^\*\*.*\*\*$/)) {
-            return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
+            return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
           } else if (part && urlRegex.test(part)) {
-            return <a key={index} href={part} target="_blank" rel="noopener noreferrer">{part}</a>;
+            return part.split(urlRegex).map((subpart, subIndex) => {
+              if (urlRegex.test(subpart)) {
+                return <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a>;
+              }
+              return subpart;
+            });
           }
           return part || null;
         })}
