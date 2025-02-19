@@ -90,7 +90,7 @@ function UserChat(props) {
     };
     const newChatLog = [...chatLog, newMessage]; // Add user's message to chat log
     setChatLog(newChatLog);
-    setApiResponse(null);
+    // setApiResponse(null);
     setInput(''); // Clear the input field
     setIsLoading(true); // Set loading state
     setError(''); // Clear any previous error

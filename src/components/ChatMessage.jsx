@@ -203,7 +203,7 @@ const formatApiResponse = (response) => {
   }
 
   // Convert other non-object, non-string types to string
-  return String(response);
+  return response;
 };
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
