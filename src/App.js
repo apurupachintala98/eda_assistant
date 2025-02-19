@@ -25,7 +25,7 @@ function App() {
     title="Chat Assistant"
     newChatButtonLabel="New Chat"
     // apiPath={`${backendBaseUrl}api/cortex/complete/`} 
-    apiPath={`${backendBaseUrl}/get_llm_response`} 
+    apiPath={`${backendBaseUrl}/get_llm_response/`} 
     // sqlUrl={`${backendBaseUrl}/run_sql_query/`}
     aplctn_cd="edagnai"
     app_id="edadip"
