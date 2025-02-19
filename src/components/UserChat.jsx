@@ -339,6 +339,14 @@ function UserChat(props) {
       content: prompt,
     };
     const newChatLog = [...chatLog, newMessage];
+
+    const preparedChatLog = newChatLog.map(message => {
+      if (typeof message.content === 'object') {
+        return { ...message, content: JSON.stringify(message.content) };
+      }
+      return message;
+    });
+
     setChatLog(newChatLog);
     setInput('');
     setIsLoading(true);
@@ -367,7 +375,7 @@ function UserChat(props) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(newChatLog)
+          body: JSON.stringify(preparedChatLog)
         }
       );
       if (!response.ok) {
@@ -397,7 +405,7 @@ function UserChat(props) {
       }
       const data = await response.json();
       setApiResponse(data);
-
+      updateChatLogFromApiResponse(data, newChatLog);
       // Function to convert object to string (if needed)
       const convertToString = (input) => {
         if (typeof input === 'string') {
