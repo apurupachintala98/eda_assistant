@@ -173,37 +173,37 @@ const formatApiResponse = (response) => {
     );
   }
 
-  // Handling object responses
-  if (typeof response === 'object') {
-    const keys = Object.keys(response);
-    if (keys.length === 0) {
-      return <p>No data available</p>;
-    }
-    return keys.map((key, index) => (
-      <div key={index}>
-        <h3>{key}</h3>
-        {response[key] == null ? (
-          <p>Unavailable data</p>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-            <tbody>
-              {Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
-                <tr key={subIndex}>
-                  <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
-                  <td style={{ border: '1px solid black', padding: '8px' }}>
-                    {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    ));
-  }
+  // // Handling object responses
+  // if (typeof response === 'object') {
+  //   const keys = Object.keys(response);
+  //   if (keys.length === 0) {
+  //     return <p>No data available</p>;
+  //   }
+  //   return keys.map((key, index) => (
+  //     <div key={index}>
+  //       <h3>{key}</h3>
+  //       {response[key] == null ? (
+  //         <p>Unavailable data</p>
+  //       ) : (
+  //         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+  //           <tbody>
+  //             {Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
+  //               <tr key={subIndex}>
+  //                 <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+  //                 <td style={{ border: '1px solid black', padding: '8px' }}>
+  //                   {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
+  //                 </td>
+  //               </tr>
+  //             ))}
+  //           </tbody>
+  //         </table>
+  //       )}
+  //     </div>
+  //   ));
+  // }
 
   // Convert other non-object, non-string types to string
-  return response;
+  return String(response);
 };
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
