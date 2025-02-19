@@ -89,7 +89,15 @@ function UserChat(props) {
       content: input,
     };
     const newChatLog = [...chatLog, newMessage]; // Add user's message to chat log
-    setChatLog(newChatLog);
+     // Preprocess newChatLog to ensure all entries are correctly formatted
+  const preparedChatLog = newChatLog.map(message => {
+    if (typeof message.content === 'object') {
+      return { ...message, content: JSON.stringify(message.content) };
+    }
+    return message;
+  });
+
+    setChatLog(preparedChatLog);
     // setApiResponse(null);
     setInput(''); // Clear the input field
     setIsLoading(true); // Set loading state
@@ -115,8 +123,7 @@ function UserChat(props) {
           headers: {
             'Content-Type': 'application/json',
           },
-          // body: JSON.stringify(newChatLog)
-          body: newChatLog
+          body: JSON.stringify(preparedChatLog)
         }
       );
       if (!response.ok) {
@@ -136,12 +143,12 @@ function UserChat(props) {
             </div>
           ),
         };
-        setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
+        setChatLog([...preparedChatLog, botMessage]); // Update chat log with assistant's error message
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
       const data = await response.json();
       setApiResponse(data);
-      updateChatLogFromApiResponse(data, newChatLog);
+      updateChatLogFromApiResponse(data, preparedChatLog);
       const convertToString = (input) => {
         if (typeof input === 'string') {
           return input;
@@ -283,7 +290,7 @@ function UserChat(props) {
         } else {
           modelReply = convertToString(data.modelreply);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
-          setChatLog([...newChatLog, botMessage]);
+          setChatLog([...preparedChatLog, botMessage]);
         }
       }
     } catch (err) {
@@ -296,7 +303,7 @@ function UserChat(props) {
           </div>
         ),
       };
-      setChatLog([...newChatLog, errorMessage]);
+      setChatLog([...preparedChatLog, errorMessage]);
       setError('Error communicating with backend');
       console.error('Error:', err);
     } finally {
