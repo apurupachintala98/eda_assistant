@@ -8,38 +8,147 @@ import 'highlight.js/styles/github.css';
 
 hljs.registerLanguage('sql', sql);
 
+// const formatApiResponse = (response) => {
+//   // Check for null or undefined response first and handle uniformly
+//   if (response == null) {
+//     return <p>No data available</p>;
+//   }
+
+//   if (typeof response === 'string') {
+//     // Detect URLs within the text
+//     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Simple regex for URLs
+//     return (
+//       <div>
+//         {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
+//           if (part && part.match(/^\*\*.*\*\*$/)) {
+//             return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
+//           } else if (part && urlRegex.test(part)) {
+//             return part.split(urlRegex).map((subpart, subIndex) => {
+//               if (urlRegex.test(subpart)) {
+//                 return <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a>;
+//               }
+//               return subpart;
+//             });
+//           }
+//           return part || null;
+//         })}
+//       </div>
+//     );
+//   } else if (Array.isArray(response)) {
+//     // Handle arrays, specifically for cases like the medical codes
+//     if (response.length === 0) {
+//       return <p>No data available</p>;
+//     }
+//     const headers = response[0] ? Object.keys(response[0]) : [];
+//     return (
+//       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+//         <thead>
+//           <tr>
+//             {headers.map((header, index) => (
+//               <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+//                 {header}
+//               </th>
+//             ))}
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {response.map((item, index) => (
+//             <tr key={index}>
+//               {Object.entries(item).map(([key, value], subIndex) => (
+//                 <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
+//               ))}
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     );
+//   } else if (typeof response === 'object') {
+//     // Check for empty object
+//     if (Object.keys(response).length === 0) {
+//       return <p>No data available</p>;
+//     }
+//     return Object.keys(response).map((key, index) => {
+//       if (response[key] == null) {
+//         return (
+//           <div key={index}>
+//             <h3>{key}</h3>
+//             <p>Unavailable data</p>
+//           </div>
+//         );
+//       }
+
+//       const valueIsSimple = Object.values(response[key]).every(
+//         item => typeof item !== 'object' || item === null
+//       );
+
+//       return (
+//         <div key={index}>
+//           <h3>{key}</h3>
+//           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+//             <tbody>
+//               {valueIsSimple ?
+//                 Object.entries(response[key]).map(([subKey, value], subIndex) => (
+//                   <tr key={subIndex}>
+//                     <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+//                     <td style={{ border: '1px solid black', padding: '8px' }}>{value.toString()}</td>
+//                   </tr>
+//                 )) :
+//                 Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
+//                   <tr key={subIndex}>
+//                     <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+//                     <td style={{ border: '1px solid black', padding: '8px' }}>
+//                       {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
+//                     </td>
+//                   </tr>
+//                 ))
+//               }
+//             </tbody>
+//           </table>
+//         </div>
+//       );
+//     });
+//   } else {
+//     // Convert other non-object, non-string types to string
+//     return String(response);
+//   }
+// };
+
 const formatApiResponse = (response) => {
-  // Check for null or undefined response first and handle uniformly
-  if (response == null) {
+  // Return a message when response is null or undefined
+  if (!response) {
     return <p>No data available</p>;
   }
 
+  // Handling string responses
   if (typeof response === 'string') {
-    // Detect URLs within the text
-    const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Simple regex for URLs
+    const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
     return (
       <div>
         {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
-          if (part && part.match(/^\*\*.*\*\*$/)) {
+          if (part.match(/^\*\*.*\*\*$/)) {
+            // Bold text marked by double asterisks
             return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
-          } else if (part && urlRegex.test(part)) {
-            return part.split(urlRegex).map((subpart, subIndex) => {
-              if (urlRegex.test(subpart)) {
-                return <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a>;
-              }
-              return subpart;
-            });
           }
-          return part || null;
+          if (urlRegex.test(part)) {
+            // Splitting and linking URLs
+            return part.split(urlRegex).map((subpart, subIndex) => (
+              urlRegex.test(subpart) ? 
+              <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
+              subpart
+            ));
+          }
+          return part;
         })}
       </div>
     );
-  } else if (Array.isArray(response)) {
-    // Handle arrays, specifically for cases like the medical codes
+  }
+
+  // Handling array responses (like lists of data)
+  if (Array.isArray(response)) {
     if (response.length === 0) {
       return <p>No data available</p>;
     }
-    const headers = response[0] ? Object.keys(response[0]) : [];
+    const headers = Object.keys(response[0] || {});
     return (
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
         <thead>
@@ -62,57 +171,40 @@ const formatApiResponse = (response) => {
         </tbody>
       </table>
     );
-  } else if (typeof response === 'object') {
-    // Check for empty object
-    if (Object.keys(response).length === 0) {
+  }
+
+  // Handling object responses
+  if (typeof response === 'object') {
+    const keys = Object.keys(response);
+    if (keys.length === 0) {
       return <p>No data available</p>;
     }
-    return Object.keys(response).map((key, index) => {
-      if (response[key] == null) {
-        return (
-          <div key={index}>
-            <h3>{key}</h3>
-            <p>Unavailable data</p>
-          </div>
-        );
-      }
-
-      const valueIsSimple = Object.values(response[key]).every(
-        item => typeof item !== 'object' || item === null
-      );
-
-      return (
-        <div key={index}>
-          <h3>{key}</h3>
+    return keys.map((key, index) => (
+      <div key={index}>
+        <h3>{key}</h3>
+        {response[key] == null ? (
+          <p>Unavailable data</p>
+        ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
             <tbody>
-              {valueIsSimple ?
-                Object.entries(response[key]).map(([subKey, value], subIndex) => (
-                  <tr key={subIndex}>
-                    <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
-                    <td style={{ border: '1px solid black', padding: '8px' }}>{value.toString()}</td>
-                  </tr>
-                )) :
-                Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
-                  <tr key={subIndex}>
-                    <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
-                    <td style={{ border: '1px solid black', padding: '8px' }}>
-                      {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
-                    </td>
-                  </tr>
-                ))
-              }
+              {Object.entries(response[key]).map(([subKey, subValue], subIndex) => (
+                <tr key={subIndex}>
+                  <td style={{ border: '1px solid black', padding: '8px', fontWeight: 'bold' }}>{subKey}</td>
+                  <td style={{ border: '1px solid black', padding: '8px' }}>
+                    {typeof subValue === 'object' ? JSON.stringify(subValue, null, 2) : subValue.toString()}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </div>
-      );
-    });
-  } else {
-    // Convert other non-object, non-string types to string
-    return String(response);
+        )}
+      </div>
+    ));
   }
-};
 
+  // Convert other non-object, non-string types to string
+  return String(response);
+};
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
