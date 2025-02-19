@@ -115,7 +115,8 @@ function UserChat(props) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(newChatLog)
+          // body: JSON.stringify(newChatLog)
+          body: newChatLog
         }
       );
       if (!response.ok) {

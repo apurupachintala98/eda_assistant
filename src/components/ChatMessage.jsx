@@ -113,69 +113,69 @@ hljs.registerLanguage('sql', sql);
 //   }
 // };
 
-// const formatApiResponse = (response) => {
-//   // Return a message when response is null or undefined
-//   if (!response) {
-//     return <p>No data available</p>;
-//   }
+const formatApiResponse = (response) => {
+  // Return a message when response is null or undefined
+  if (!response) {
+    return <p>No data available</p>;
+  }
 
-//   // Handling string responses
-//   if (typeof response === 'string') {
-//     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
-//     return (
-//       <div>
-//         {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
-//           if (part.match(/^\*\*.*\*\*$/)) {
-//             // Bold text marked by double asterisks
-//             return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
-//           }
-//           if (urlRegex.test(part)) {
-//             // Splitting and linking URLs
-//             return part.split(urlRegex).map((subpart, subIndex) => (
-//               urlRegex.test(subpart) ? 
-//               <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
-//               subpart
-//             ));
-//           }
-//           return part;
-//         })}
-//       </div>
-//     );
-//   }
+  // Handling string responses
+  if (typeof response === 'string') {
+    const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
+    return (
+      <div>
+        {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
+          if (part.match(/^\*\*.*\*\*$/)) {
+            // Bold text marked by double asterisks
+            return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
+          }
+          if (urlRegex.test(part)) {
+            // Splitting and linking URLs
+            return part.split(urlRegex).map((subpart, subIndex) => (
+              urlRegex.test(subpart) ? 
+              <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
+              subpart
+            ));
+          }
+          return part;
+        })}
+      </div>
+    );
+  }
 
-//   // Handling array responses (like lists of data)
-//   if (Array.isArray(response)) {
-//     if (response.length === 0) {
-//       return <p>No data available</p>;
-//     }
-//     const headers = Object.keys(response[0] || {});
-//     return (
-//       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-//         <thead>
-//           <tr>
-//             {headers.map((header, index) => (
-//               <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
-//                 {header}
-//               </th>
-//             ))}
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {response.map((item, index) => (
-//             <tr key={index}>
-//               {Object.entries(item).map(([key, value], subIndex) => (
-//                 <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
-//               ))}
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     );
-//   }
+  // Handling array responses (like lists of data)
+  if (Array.isArray(response)) {
+    if (response.length === 0) {
+      return <p>No data available</p>;
+    }
+    const headers = Object.keys(response[0] || {});
+    return (
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+        <thead>
+          <tr>
+            {headers.map((header, index) => (
+              <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {response.map((item, index) => (
+            <tr key={index}>
+              {Object.entries(item).map(([key, value], subIndex) => (
+                <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
 
-//   // Handle other unexpected types of responses or when response is undefined or null
-//   return <p>Unexpected data format</p>;
-// };
+  // Handle other unexpected types of responses or when response is undefined or null
+  return <p>Unexpected data format</p>;
+};
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
@@ -221,12 +221,9 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedRes
                 {chat.isSQLResponse ? (
                   <pre><code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
                 ) : (
-                  // chat.role === 'assistant'
-                  //   ? formatApiResponse(chat.content)
-                  //   : chat.content
                   chat.role === 'assistant'
-                  ? chat.content
-                  : chat.content
+                    ? formatApiResponse(chat.content)
+                    : chat.content
                 )}
               </Typography>
               {chat.role === 'user' ? (
