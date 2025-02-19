@@ -113,6 +113,68 @@ hljs.registerLanguage('sql', sql);
 //   }
 // };
 
+// const formatApiResponse = (response) => {
+//   // Return a message when response is null or undefined
+//   if (!response) {
+//     return <p>No data available</p>;
+//   }
+
+//   // Handling string responses
+//   if (typeof response === 'string') {
+//     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
+//     return (
+//       <div>
+//         {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
+//           if (part.match(/^\*\*.*\*\*$/)) {
+//             // Bold text marked by double asterisks
+//             return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
+//           }
+//           if (urlRegex.test(part)) {
+//             // Splitting and linking URLs
+//             return part.split(urlRegex).map((subpart, subIndex) => (
+//               urlRegex.test(subpart) ? 
+//               <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
+//               subpart
+//             ));
+//           }
+//           return part;
+//         })}
+//       </div>
+//     );
+//   }
+
+//   // Handling array responses (like lists of data)
+//   if (Array.isArray(response)) {
+//     if (response.length === 0) {
+//       return <p>No data available</p>;
+//     }
+//     const headers = Object.keys(response[0] || {});
+//     return (
+//       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+//         <thead>
+//           <tr>
+//             {headers.map((header, index) => (
+//               <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+//                 {header}
+//               </th>
+//             ))}
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {response.map((item, index) => (
+//             <tr key={index}>
+//               {Object.entries(item).map(([key, value], subIndex) => (
+//                 <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
+//               ))}
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     );
+//   }
+//   return String(response);
+// };
+
 const formatApiResponse = (response) => {
   // Return a message when response is null or undefined
   if (!response) {
@@ -121,26 +183,18 @@ const formatApiResponse = (response) => {
 
   // Handling string responses
   if (typeof response === 'string') {
-    const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
-    return (
-      <div>
-        {response.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
-          if (part.match(/^\*\*.*\*\*$/)) {
-            // Bold text marked by double asterisks
-            return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
-          }
-          if (urlRegex.test(part)) {
-            // Splitting and linking URLs
-            return part.split(urlRegex).map((subpart, subIndex) => (
-              urlRegex.test(subpart) ? 
-              <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
-              subpart
-            ));
-          }
-          return part;
-        })}
-      </div>
-    );
+    try {
+      // Attempt to parse JSON in case the response is a serialized array
+      const parsedResponse = JSON.parse(response);
+      if (Array.isArray(parsedResponse)) {
+        return renderTable(parsedResponse);  // Render as table if it's an array
+      }
+      // If parsed successfully but not an array, treat it as normal string content
+      return renderTextWithFormatting(parsedResponse);
+    } catch (error) {
+      // If parsing fails, render it as a normal string, assume it's not JSON
+      return renderTextWithFormatting(response);
+    }
   }
 
   // Handling array responses (like lists of data)
@@ -148,34 +202,62 @@ const formatApiResponse = (response) => {
     if (response.length === 0) {
       return <p>No data available</p>;
     }
-    const headers = Object.keys(response[0] || {});
-    return (
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-        <thead>
-          <tr>
-            {headers.map((header, index) => (
-              <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {response.map((item, index) => (
-            <tr key={index}>
-              {Object.entries(item).map(([key, value], subIndex) => (
-                <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
+    return renderTable(response);
   }
 
-  // Handle other unexpected types of responses or when response is undefined or null
-  return <p>Unexpected data format</p>;
+  // Fallback to converting whatever this is to a string
+  return String(response);
 };
+
+function renderTable(data) {
+  const headers = Object.keys(data[0] || {});
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr>
+          {headers.map((header, index) => (
+            <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item, index) => (
+          <tr key={index}>
+            {Object.entries(item).map(([key, value], subIndex) => (
+              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function renderTextWithFormatting(text) {
+  const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
+  return (
+    <div>
+      {text.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
+        if (part.match(/^\*\*.*\*\*$/)) {
+          // Bold text marked by double asterisks
+          return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
+        }
+        if (urlRegex.test(part)) {
+          // Splitting and linking URLs
+          return part.split(urlRegex).map((subpart, subIndex) => (
+            urlRegex.test(subpart) ? 
+            <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
+            subpart
+          ));
+        }
+        return part;
+      })}
+    </div>
+  );
+}
+
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {

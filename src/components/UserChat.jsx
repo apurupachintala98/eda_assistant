@@ -97,7 +97,7 @@ function UserChat(props) {
     return message;
   });
 
-    setChatLog(preparedChatLog);
+    setChatLog(newChatLog);
     // setApiResponse(null);
     setInput(''); // Clear the input field
     setIsLoading(true); // Set loading state
@@ -143,12 +143,12 @@ function UserChat(props) {
             </div>
           ),
         };
-        setChatLog([...preparedChatLog, botMessage]); // Update chat log with assistant's error message
+        setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
       const data = await response.json();
       setApiResponse(data);
-      updateChatLogFromApiResponse(data, preparedChatLog);
+      updateChatLogFromApiResponse(data, newChatLog);
       const convertToString = (input) => {
         if (typeof input === 'string') {
           return input;
@@ -290,7 +290,7 @@ function UserChat(props) {
         } else {
           modelReply = convertToString(data.modelreply);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
-          setChatLog([...preparedChatLog, botMessage]);
+          setChatLog([...newChatLog, botMessage]);
         }
       }
     } catch (err) {
@@ -303,7 +303,7 @@ function UserChat(props) {
           </div>
         ),
       };
-      setChatLog([...preparedChatLog, errorMessage]);
+      setChatLog([...newChatLog, errorMessage]);
       setError('Error communicating with backend');
       console.error('Error:', err);
     } finally {
