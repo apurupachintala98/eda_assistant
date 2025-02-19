@@ -106,7 +106,7 @@ function UserChat(props) {
       //   context: context,
       //   prompt: newChatLog
       // };
-      const url = `${apiPath}?app_cd=${appCd}&request_id=${sessionId}`;
+      const url = `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`;
       const response = await fetch(
         url,
         {
@@ -352,7 +352,7 @@ function UserChat(props) {
       // };
 
       const response = await fetch(
-        `${apiPath}?app_cd=${appCd}&request_id=${sessionId}`,
+        `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`,
         {
           method: 'PUT',
           headers: {
