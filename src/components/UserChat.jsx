@@ -96,25 +96,25 @@ function UserChat(props) {
     setShowInitialView(false);
     setShowResponse(false);
     try {
-      const payload = {
-        aplctn_cd: aplctn_cd,
-        app_id: app_id,
-        session_Id: sessionId,
-        edadip_api_key: edadip_api_key,
-        method: method,
-        model: model,
-        context: context,
-        prompt: newChatLog
-      };
-      const url = `${apiPath}`;
+      // const payload = {
+      //   aplctn_cd: aplctn_cd,
+      //   app_id: app_id,
+      //   session_Id: sessionId,
+      //   edadip_api_key: edadip_api_key,
+      //   method: method,
+      //   model: model,
+      //   context: context,
+      //   prompt: newChatLog
+      // };
+      const url = `${apiPath}?app_cd=${appCd}&request_id=${sessionId}`;
       const response = await fetch(
         url,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(newChatLog)
         }
       );
       if (!response.ok) {
@@ -340,25 +340,25 @@ function UserChat(props) {
 
     try {
       // Send the new message to the API
-      const payload = {
-        aplctn_cd: aplctn_cd,
-        app_id: app_id,
-        session_Id: sessionId,
-        edadip_api_key: edadip_api_key,
-        method: method,
-        model: model,
-        context: context,
-        prompt: newChatLog
-      };
+      // const payload = {
+      //   aplctn_cd: aplctn_cd,
+      //   app_id: app_id,
+      //   session_Id: sessionId,
+      //   edadip_api_key: edadip_api_key,
+      //   method: method,
+      //   model: model,
+      //   context: context,
+      //   prompt: newChatLog
+      // };
 
       const response = await fetch(
-        `${apiPath}`,
+        `${apiPath}?app_cd=${appCd}&request_id=${sessionId}`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(newChatLog)
         }
       );
       if (!response.ok) {
@@ -581,7 +581,6 @@ function UserChat(props) {
       setIsLoading(false); // Set loading state to false
     }
   };
-
 
   // function handleShowResponse() {
   //   setShowResponse((prev) => {

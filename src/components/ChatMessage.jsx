@@ -17,14 +17,18 @@ const formatApiResponse = (response) => {
   if (typeof response === 'string') {
     // Detect URLs within the text
     const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Simple regex for URLs
-    return response.split(/(\*\*.*?\*\*)|(\bhttps?:\/\/\S+\b)/g).map((part, index) => {
-      if (part && part.startsWith('**') && part.endsWith('**')) {
-        return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
-      } else if (part && urlRegex.test(part)) {
-        return <a key={index} href={part} target="_blank" rel="noopener noreferrer">{part}</a>;
-      }
-      return part;
-    });
+    return (
+      <div>
+        {response.split(/(\*\*.*?\*\*)|(\bhttps?:\/\/\S+\b)/g).map((part, index) => {
+          if (part && part.match(/^\*\*.*\*\*$/)) {
+            return <b key={index}>{part.replace(/\*\*/g, '')}</b>;
+          } else if (part && urlRegex.test(part)) {
+            return <a key={index} href={part} target="_blank" rel="noopener noreferrer">{part}</a>;
+          }
+          return part || null;
+        })}
+      </div>
+    );
   } else if (Array.isArray(response)) {
     // Handle arrays, specifically for cases like the medical codes
     if (response.length === 0) {
@@ -103,6 +107,7 @@ const formatApiResponse = (response) => {
     return String(response);
   }
 };
+
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
