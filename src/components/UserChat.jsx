@@ -62,7 +62,7 @@ function UserChat(props) {
   // Handle session end due to inactivity
   const handleSessionEnd = () => {
     setSessionActive(false);
-    setChatLog([...chatLog, { role: 'assistant', content: 'Session has ended due to inactivity.' }]);
+    // setChatLog([...chatLog, { role: 'assistant', content: 'Session has ended due to inactivity.' }]);
     setOpenPopup(true); // Show the popup
   };
 
