@@ -38,7 +38,7 @@ function UserChat(props) {
   const inactivityTimeoutRef = useRef(null); // Ref for the inactivity timeout
   const [sessionActive, setSessionActive] = useState(true); // State to track session activity
   const [openPopup, setOpenPopup] = useState(false);
-  const INACTIVITY_TIME = 10 * 60 * 1000; 
+  const INACTIVITY_TIME = 10 * 60 * 1000;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedResponse, setStoredResponse] = useState(''); // New state to store the response
   const [showResponse, setShowResponse] = useState(false);
@@ -62,7 +62,6 @@ function UserChat(props) {
   // Handle session end due to inactivity
   const handleSessionEnd = () => {
     setSessionActive(false);
-    // setChatLog([...chatLog, { role: 'assistant', content: 'Session has ended due to inactivity.' }]);
     setOpenPopup(true); // Show the popup
   };
 
@@ -79,16 +78,44 @@ function UserChat(props) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!input.trim()) return;
+    handleMessageSubmit(input);
+  }
+
+  function updateChatLogFromApiResponse(apiResponse, currentChatLog) {
+    if (apiResponse && apiResponse.modelreply) {
+      const botMessage = {
+        role: 'assistant',
+        content: apiResponse.modelreply,
+      };
+      setChatLog([...currentChatLog, botMessage]);
+    }
+  }
+
+  const handleInputFocusOrChange = () => {
+    setShowInitialView(false);
+    resetInactivityTimeout();
+  };
+
+  useEffect(() => {
+    resetInactivityTimeout();
+    return () => {
+      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
+    };
+  }, []);
+
+  const handleMessageSubmit = async (messageContent, fromPrompt = false) => {
+    if (!messageContent.trim()) return;
     if (!aplctn_cd.trim() || !sessionId.trim()) {
       setError('Please provide valid app_cd and request_id.');
       return;
     }
+
     const newMessage = {
       role: 'user',
-      content: input,
+      content: messageContent,
     };
-    const newChatLog = [...chatLog, newMessage]; // Add user's message to chat log
+
+    const newChatLog = [...chatLog, newMessage];
     // Preprocess newChatLog to ensure all entries are correctly formatted
     const preparedChatLog = newChatLog.map(message => {
       if (typeof message.content === 'object') {
@@ -98,23 +125,12 @@ function UserChat(props) {
     });
 
     setChatLog(newChatLog);
-    // setApiResponse(null);
     setInput(''); // Clear the input field
     setIsLoading(true); // Set loading state
     setError(''); // Clear any previous error
     setShowInitialView(false);
     setShowResponse(false);
     try {
-      // const payload = {
-      //   aplctn_cd: aplctn_cd,
-      //   app_id: app_id,
-      //   session_Id: sessionId,
-      //   edadip_api_key: edadip_api_key,
-      //   method: method,
-      //   model: model,
-      //   context: context,
-      //   prompt: newChatLog
-      // };
       const url = `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`;
       const response = await fetch(
         url,
@@ -309,318 +325,12 @@ function UserChat(props) {
     } finally {
       setIsLoading(false); // Set loading state to false
     }
-  }
 
-  function updateChatLogFromApiResponse(apiResponse, currentChatLog) {
-    if (apiResponse && apiResponse.modelreply) {
-      const botMessage = {
-        role: 'assistant',
-        content: apiResponse.modelreply,
-      };
-      setChatLog([...currentChatLog, botMessage]);
-    }
-  }
-
-  const handleInputFocusOrChange = () => {
-    setShowInitialView(false);
-    resetInactivityTimeout();
   };
-
-  useEffect(() => {
-    resetInactivityTimeout();
-    return () => {
-      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
-    };
-  }, []);
 
   const handlePromptClick = async (prompt) => {
-    const newMessage = {
-      role: 'user',
-      content: prompt,
-    };
-    const newChatLog = [...chatLog, newMessage];
-
-    const preparedChatLog = newChatLog.map(message => {
-      if (typeof message.content === 'object') {
-        return { ...message, content: JSON.stringify(message.content) };
-      }
-      return message;
-    });
-
-    setChatLog(newChatLog);
-    setInput('');
-    setIsLoading(true);
-    setResponseReceived(false);
-    setError('');
-    setShowInitialView(false);
-    setShowResponse(false);
-
-    try {
-      // Send the new message to the API
-      // const payload = {
-      //   aplctn_cd: aplctn_cd,
-      //   app_id: app_id,
-      //   session_Id: sessionId,
-      //   edadip_api_key: edadip_api_key,
-      //   method: method,
-      //   model: model,
-      //   context: context,
-      //   prompt: newChatLog
-      // };
-
-      const response = await fetch(
-        `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(preparedChatLog)
-        }
-      );
-      if (!response.ok) {
-        let errorMessage = '';
-
-        // Handle different status codes
-        if (response.status === 404) {
-          errorMessage = '404 - Not Found';
-        } else if (response.status === 500) {
-          errorMessage = '500 - Internal Server Error';
-        } else {
-          errorMessage = `${response.status} - ${response.statusText}`;
-        }
-
-        // Display the image and error message
-        const botMessage = {
-          role: 'assistant',
-          content: (
-            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-              <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{errorMessage}</p>
-            </div>
-          ),
-        };
-
-        setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
-        throw new Error(errorMessage); // Re-throw the error for logging purposes
-      }
-      const data = await response.json();
-      setApiResponse(data);
-      updateChatLogFromApiResponse(data, newChatLog);
-      // Function to convert object to string (if needed)
-      const convertToString = (input) => {
-        if (typeof input === 'string') {
-          return input;
-        } else if (Array.isArray(input)) {
-          // Recursively convert array items
-          return input.map(convertToString).join(', ');
-        } else if (typeof input === 'object' && input !== null) {
-          // Convert key-value pairs
-          return Object.entries(input)
-            .map(([key, value]) => `${key}: ${convertToString(value)}`)
-            .join(', ');
-        }
-        return String(input);
-      };
-      let isSQLResponse = false;
-      let modelReply = 'No valid reply found.'; // Default message
-      if (data.modelreply) {
-        // Check if the response is a JSON array of objects
-        // Handling object with nested objects scenario
-        if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
-          // Generate table from nested object data
-          const keys = Object.keys(data.modelreply);
-          const columns = Object.keys(data.modelreply[keys[0]]); // assuming uniform structure
-          const rows = columns.map(column => ({
-            column,
-            values: keys.map(key => data.modelreply[key][column])
-          }));
-
-          modelReply = (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                <thead>
-                  <tr>{columns.map(column => <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {keys.map((key, rowIndex) => (
-                    <tr key={key}>
-                      {columns.map(column => (
-                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data.modelreply[key][column])}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        } else if (Array.isArray(data.modelreply) && data.modelreply.every(item => typeof item === 'object')) {
-          // Handling array of objects scenario
-          const columnCount = Object.keys(data.modelreply[0]).length;
-          const rowCount = data.modelreply.length;
-          modelReply = (
-            <div style={{ display: 'flex', alignItems: 'start' }}>
-              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                <thead>
-                  <tr>
-                    {Object.keys(data.modelreply[0]).map((key) => (
-                      <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.modelreply.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {Object.values(row).map((val, colIndex) => (
-                        <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        } else if (typeof data.modelreply === 'string') {
-          const sqlRegex = /```sql([\s\S]*?)```/g;
-          const parts = [];
-          let lastIndex = 0;
-          let match;
-
-          // Split the response into SQL and text
-          while ((match = sqlRegex.exec(data.modelreply)) !== null) {
-            // Add the text before the SQL block
-            if (match.index > lastIndex) {
-              parts.push(
-                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
-                  {data.modelreply.slice(lastIndex, match.index).trim()}
-                </p>
-              );
-            }
-
-            // Format the SQL block
-            const sqlContent = match[1].trim();
-            try {
-              parts.push(
-                <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
-                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {sqlFormatter(sqlContent)}
-                  </code>
-                </pre>
-              );
-            } catch (err) {
-              console.error("SQL Formatting Error:", err);
-              parts.push(
-                <pre key={`sql-${match.index}`} style={{ margin: '8px 0', color: 'red' }}>
-                  {sqlContent}
-                </pre>
-              );
-            }
-
-            lastIndex = sqlRegex.lastIndex;
-          }
-
-          // Handle any remaining content after the last SQL block
-          if (lastIndex < data.modelreply.length) {
-            const remainingContent = data.modelreply.slice(lastIndex).trim();
-            if (/SELECT|WHERE|FROM/i.test(remainingContent)) {
-              // Treat remaining content as SQL
-              try {
-                parts.push(
-                  <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
-                    <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {sqlFormatter(remainingContent)}
-                    </code>
-                  </pre>
-                );
-              } catch (err) {
-                console.error("SQL Formatting Error:", err);
-                parts.push(
-                  <pre key={`sql-remaining`} style={{ margin: '8px 0', color: 'red' }}>
-                    {remainingContent}
-                  </pre>
-                );
-              }
-            } else {
-              // Add remaining text as-is
-              parts.push(
-                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
-                  {remainingContent}
-                </p>
-              );
-            }
-          }
-
-          // Set the model reply as the processed parts
-          modelReply = (
-            <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
-              {parts}
-            </div>
-          );
-
-          const raw = data.modelreply;
-          setRawResponse(raw);
-          setStoredResponse(modelReply);
-
-          // Check if there's any SQL content, and set buttons accordingly
-          if (sqlRegex.test(data.modelreply) || /SELECT|FROM|WHERE/i.test(data.modelreply)) {
-            setShowButton(true); // Show "Show SQL" button
-            setShowExecuteButton(true); // Show "Execute SQL" button
-          } else {
-            // No SQL content found, ensure buttons remain hidden
-            setShowButton(false);
-            setShowExecuteButton(false);
-          }
-        } else {
-          // Otherwise, convert to string
-          modelReply = convertToString(data.modelreply);
-          const botMessage = { role: 'assistant', content: modelReply, isSQLResponse };
-          setChatLog([...newChatLog, botMessage]);
-
-          // Ensure buttons are hidden, as this is not an SQL response
-          setShowButton(false);
-          setShowExecuteButton(false);
-        }
-      }
-    } catch (err) {
-      let fallbackErrorMessage = 'Error communicating with backend.';
-      const errorMessage = {
-        role: 'assistant',
-        content: (
-          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{fallbackErrorMessage}</p>
-          </div>
-        ),
-      };
-
-      setChatLog([...newChatLog, errorMessage]);
-      setError('Error communicating with backend');
-      console.error('Error:', err);
-    } finally {
-      setIsLoading(false); // Set loading state to false
-    }
+    handleMessageSubmit(prompt, true);
   };
-
-  // function handleShowResponse() {
-  //   setShowResponse((prev) => {
-  //     const newVisibility = !prev; // Toggle SQL response visibilit
-  //     if (newVisibility) {
-  //       const botMessage = {
-  //         role: 'assistant',
-  //         content: storedResponse,
-  //       };
-
-  //       setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
-  //     } else {
-  //       setChatLog((prevChatLog) => {
-  //         if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
-  //           return prevChatLog.slice(0, prevChatLog.length - 1);
-  //         }
-  //         return prevChatLog;
-  //       });
-  //     }
-
-  //     return newVisibility;
-  //   });
-  // }
 
   return (
 
@@ -786,7 +496,7 @@ function UserChat(props) {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                  setOpenPopup(false); 
+                  setOpenPopup(false);
                   handleNewChat();
                 }}
               >
@@ -795,7 +505,7 @@ function UserChat(props) {
               <Button
                 variant="outlined"
                 onClick={() => {
-                  setOpenPopup(false); 
+                  setOpenPopup(false);
                 }}
               >
                 Continue
