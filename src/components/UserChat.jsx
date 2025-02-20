@@ -38,7 +38,7 @@ function UserChat(props) {
   const inactivityTimeoutRef = useRef(null); // Ref for the inactivity timeout
   const [sessionActive, setSessionActive] = useState(true); // State to track session activity
   const [openPopup, setOpenPopup] = useState(false);
-  const INACTIVITY_TIME = 10 * 60 * 1000;
+  const INACTIVITY_TIME = 10 * 60 * 1000; 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedResponse, setStoredResponse] = useState(''); // New state to store the response
   const [showResponse, setShowResponse] = useState(false);
