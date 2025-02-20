@@ -258,8 +258,6 @@ function renderTextWithFormatting(text) {
   );
 }
 
-
-
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
     hljs.highlightAll();

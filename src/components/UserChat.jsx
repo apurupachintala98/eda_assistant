@@ -89,13 +89,13 @@ function UserChat(props) {
       content: input,
     };
     const newChatLog = [...chatLog, newMessage]; // Add user's message to chat log
-     // Preprocess newChatLog to ensure all entries are correctly formatted
-  const preparedChatLog = newChatLog.map(message => {
-    if (typeof message.content === 'object') {
-      return { ...message, content: JSON.stringify(message.content) };
-    }
-    return message;
-  });
+    // Preprocess newChatLog to ensure all entries are correctly formatted
+    const preparedChatLog = newChatLog.map(message => {
+      if (typeof message.content === 'object') {
+        return { ...message, content: JSON.stringify(message.content) };
+      }
+      return message;
+    });
 
     setChatLog(newChatLog);
     // setApiResponse(null);
@@ -780,18 +780,27 @@ function UserChat(props) {
           }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Session Ended</Typography>
             <Typography sx={{ mt: 2 }}>Your session has ended due to 10 minutes of inactivity.</Typography>
-            {/* New Chat Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                setOpenPopup(false);  // Close modal
-                handleNewChat(); // Start new chat
-              }}
-              sx={{ mt: 2 }}
-            >
-              New Chat
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-around' }}>
+              {/* New Chat Button */}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setOpenPopup(false); 
+                  handleNewChat();
+                }}
+              >
+                New Chat
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setOpenPopup(false); 
+                }}
+              >
+                Continue
+              </Button>
+            </Box>
           </Box>
         </Fade>
       </Modal>
