@@ -10,6 +10,8 @@ import { format as sqlFormatter } from 'sql-formatter';
 import hljs from 'highlight.js/lib/core';
 import sql from 'highlight.js/lib/languages/sql';
 import SuggestedPrompts from '../components/SuggestedPrompts';
+import Feedback from '../components/Feedback';
+
 
 hljs.registerLanguage('sql', sql);
 
@@ -126,6 +128,7 @@ function UserChat(props) {
 
     setChatLog(newChatLog);
     setInput(''); // Clear the input field
+    setResponseReceived(false)// Set loading state to true
     setIsLoading(true); // Set loading state
     setError(''); // Clear any previous error
     setShowInitialView(false);
@@ -164,6 +167,7 @@ function UserChat(props) {
       }
       const data = await response.json();
       setApiResponse(data);
+      setResponseReceived(false);
       updateChatLogFromApiResponse(data, newChatLog);
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -324,6 +328,7 @@ function UserChat(props) {
       console.error('Error:', err);
     } finally {
       setIsLoading(false); // Set loading state to false
+      setResponseReceived(true);// Set loading state to false
     }
 
   };
@@ -392,7 +397,7 @@ function UserChat(props) {
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
-        {/* {responseReceived && <Feedback />} */}
+        {responseReceived && <Feedback />}
         {successMessage && <Alert color="success"><span>{successMessage}</span></Alert>}
       </Box>
 
