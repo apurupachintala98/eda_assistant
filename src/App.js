@@ -14,11 +14,7 @@ function App() {
                 apiPath={config.apiPaths.getResponse}
                 sqlUrl={config.apiPaths.runQuery}
                 aplctn_cd={config.aplctn_cd}
-                app_id={config.app_id}
-                edadip_api_key={config.edadip_api_key}
-                method={config.method}
-                model={config.model}
-                context={config.context}
+                feedback={config.apiPaths.feedback}
                 chatbotImage={require(`${config.images.chatbot}`)}
                 suggestedPrompts={config.suggestedPrompts}
                 userImage={require(`${config.images.user}`)}

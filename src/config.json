@@ -4,19 +4,16 @@
     "newChatButtonLabel": "New Chat",
     "apiPaths": {
         "getResponse": "http://10.126.192.122:8010/get_llm_response/",
-        "runQuery": "http://10.126.192.122:8010/run_sql_query/"
+        "runQuery": "http://10.126.192.122:8010/run_sql_query/",
+        "feedback": "http://10.126.192.122:8000/get_llm_feedback/"
     },
     "aplctn_cd": "edagnai",
-    "app_id": "edadip",
-    "edadip_api_key": "78a799ea-a0f6-11ef-a0ce-15a449f7a8b0",
-    "method": "cortex",
-    "model": "llama3.3-70b",
-    "context": "You are powerful AI assistant in providing accurate answers always. Be Concise in providing answers based on context.",
+    "user_id": "abc1234",
     "chatInitialMessage": "Hello there, I am your Chat Assistant. How can I help you today?",
     "suggestedPrompts": [
-        "Show total membership by lob for incurred month 202409",
-        "Find total procedure count by HCC for incurred period 202409?",
-        "For commercial market, Show Paid expense PMPM by mbu for incurred period 202409"
+        "Prompt 1",
+        "Prompt 2",
+        "Prompt 3"
     ],
     "images": {
         "logo": "./images/logo.png",

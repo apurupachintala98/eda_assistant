@@ -29,8 +29,7 @@ function UserChat(props) {
     isLoading, setIsLoading,
     successMessage, setSuccessMessage,
     showInitialView, setShowInitialView,
-    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton, app_id,
-    edadip_api_key, method, model, context,
+    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl,feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
   } = props;
 
   const endOfMessagesRef = useRef(null);
@@ -40,6 +39,7 @@ function UserChat(props) {
   const inactivityTimeoutRef = useRef(null); // Ref for the inactivity timeout
   const [sessionActive, setSessionActive] = useState(true); // State to track session activity
   const [openPopup, setOpenPopup] = useState(false);
+  const [resId, setResId] = useState(null);
   const INACTIVITY_TIME = 10 * 60 * 1000;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedResponse, setStoredResponse] = useState(''); // New state to store the response
@@ -134,7 +134,13 @@ function UserChat(props) {
     setShowInitialView(false);
     setShowResponse(false);
     try {
-      const url = `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`;
+      const url = `${apiPath}`;
+       const payload = {
+        aplctn_cd: aplctn_cd,
+        session_Id: sessionId,
+        user_id: user_id,
+        prompt: preparedChatLog
+      };
       const response = await fetch(
         url,
         {
@@ -142,7 +148,7 @@ function UserChat(props) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(preparedChatLog)
+          body: JSON.stringify(payload)
         }
       );
       if (!response.ok) {
@@ -165,8 +171,11 @@ function UserChat(props) {
         setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
-      const data = await response.json();
+      const json = await response.json();
+      const data = json.modelreply.body;
       setApiResponse(data);
+      const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
+      setResId(newResId);
       setResponseReceived(false);
       updateChatLogFromApiResponse(data, newChatLog);
       const convertToString = (input) => {
@@ -397,7 +406,12 @@ function UserChat(props) {
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
-        {responseReceived && <Feedback />}
+        {responseReceived && 
+        <Feedback  
+            fdbk_id={resId}
+            feedback={feedback}
+            sessionId={sessionId}
+            aplctn_cd={aplctn_cd}/>}
         {successMessage && <Alert color="success"><span>{successMessage}</span></Alert>}
       </Box>
 

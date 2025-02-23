@@ -72,7 +72,7 @@ const CommentIcon = () => (
   </svg>
 );
 
-const Feedback = ({ fdbk_id, routeCd, requestId, appCd }) => {
+const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [isCommentBoxVisible, setIsCommentBoxVisible] = useState(false);
@@ -92,20 +92,26 @@ const Feedback = ({ fdbk_id, routeCd, requestId, appCd }) => {
       }
     }
     
-    // Prepare payload based on feedback type
-    const payload = {
-      fdbk_id,
-      fdbk_actn: type === 'like' ? true : false, // Set feedback to true for like, false for dislike
-    };
+    
 
     try {
-      const response = await fetch(`http://10.126.192.122:8000/get_llm_feedback/?app_cd=${appCd}&request_id=${requestId}&route_cd=${routeCd}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const url = `${feedback}`;
+      const payload = {
+        aplctn_cd: aplctn_cd,
+        session_Id: sessionId,
+        fdbk_id,
+        fdbk_actn: type === 'like' ? true : false,
+      };
+      const response = await fetch(
+        url,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to update feedback status');
@@ -125,13 +131,23 @@ const Feedback = ({ fdbk_id, routeCd, requestId, appCd }) => {
     };
 
     try {
-      const response = await fetch(`http://10.126.192.122:8000/get_llm_feedback/?app_cd=${appCd}&request_id=${requestId}&route_cd=${routeCd}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const url = `${feedback}`;
+      const payload = {
+        aplctn_cd: aplctn_cd,
+        session_Id: sessionId,
+        fdbk_id,
+        comment: comment.trim(),
+      };
+      const response = await fetch(
+        url,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to submit comment');

@@ -19,11 +19,8 @@ const Dashboard = ({
   apiPath,
   sqlUrl,
   aplctn_cd,
-  app_id,
-  edadip_api_key,
-  method,
-  model,
-  context,
+  feedback,
+  user_id,
   chatInitialMessage = "Hello there, I am your Chat Assistant. How can I help you today?",
   customStyles = {},
   chatbotImage = chatbotImageD,
@@ -148,17 +145,14 @@ const Dashboard = ({
               setRequestId={setRequestId}
               apiPath={apiPath}
               aplctn_cd={aplctn_cd}
-              app_id={app_id}
-              edadip_api_key={edadip_api_key}
-              method={method}
-              model={model}
-              context={context}
+              user_id={user_id}
               customStyles={customStyles.chat}
               chatInitialMessage={chatInitialMessage}
               chatbotImage={chatbotImage}
               userImage={userImage}
               handleNewChat={handleNewChat}
               sqlUrl={sqlUrl}
+              feedback={feedback}
               suggestedPrompts={suggestedPrompts}
               showExecuteButton={showExecuteButton}
               setShowExecuteButton={setShowExecuteButton}
