@@ -3,9 +3,8 @@
     "title": "Chat Assistant",
     "newChatButtonLabel": "New Chat",
     "apiPaths": {
-        "getResponse": "http://10.126.192.122:8010/get_llm_response/",
-        "runQuery": "http://10.126.192.122:8010/run_sql_query/",
-        "feedback": "http://10.126.192.122:8000/get_llm_feedback/"
+        "getResponse": "https://sfassist.edagenaidev.awsdns.internal.das/api/cortex/complete/",
+        "feedback": "https://sfassist.edagenaidev.awsdns.internal.das/update_feedback/"
     },
     "aplctn_cd": "edagnai",
     "user_id": "abc1234",
