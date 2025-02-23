@@ -2,7 +2,6 @@
   "name": "eda_chatassistant",
   "version": "0.3.2",
   "main": "dist/index.js",
-  "proxy": "http://localhost:8000",
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -58,7 +57,10 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.26.3",
     "babel-loader": "^9.2.1",
+    "css-loader": "^7.1.2",
     "file-loader": "^6.2.0",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "^3.4.17",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
   },
