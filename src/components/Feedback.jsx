@@ -105,7 +105,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       const response = await fetch(
         url,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -141,7 +141,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       const response = await fetch(
         url,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
