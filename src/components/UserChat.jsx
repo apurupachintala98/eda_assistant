@@ -28,8 +28,9 @@ function UserChat(props) {
     chatInitialMessage,
     isLoading, setIsLoading,
     successMessage, setSuccessMessage,
-    showInitialView, setShowInitialView, user_id,
-    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl,feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
+    showInitialView, setShowInitialView,
+    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton, app_id,
+    edadip_api_key, method, model, context,
   } = props;
 
   const endOfMessagesRef = useRef(null);
@@ -45,7 +46,6 @@ function UserChat(props) {
   const [showResponse, setShowResponse] = useState(false);
   const [data, setData] = useState('');
   const [rawResponse, setRawResponse] = useState('');
-  const [resId, setResId] = useState(null);
   const [showSQLButtons, setShowSQLButtons] = useState(false);
 
   useLayoutEffect(() => {
@@ -134,13 +134,7 @@ function UserChat(props) {
     setShowInitialView(false);
     setShowResponse(false);
     try {
-      const url = `${apiPath}`;
-       const payload = {
-        aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
-        user_id: user_id,
-        prompt: preparedChatLog
-      };
+      const url = `${apiPath}?app_cd=${aplctn_cd}&request_id=${sessionId}`;
       const response = await fetch(
         url,
         {
@@ -148,7 +142,7 @@ function UserChat(props) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(preparedChatLog)
         }
       );
       if (!response.ok) {
@@ -171,11 +165,8 @@ function UserChat(props) {
         setChatLog([...newChatLog, botMessage]); // Update chat log with assistant's error message
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
-      const json = await response.json();
-      const data = json.modelreply.body;
+      const data = await response.json();
       setApiResponse(data);
-      const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
-      setResId(newResId);
       setResponseReceived(false);
       updateChatLogFromApiResponse(data, newChatLog);
       const convertToString = (input) => {
@@ -339,6 +330,7 @@ function UserChat(props) {
       setIsLoading(false); // Set loading state to false
       setResponseReceived(true);// Set loading state to false
     }
+
   };
 
   const handlePromptClick = async (prompt) => {
@@ -405,12 +397,7 @@ function UserChat(props) {
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
-        {responseReceived && 
-        <Feedback  
-            fdbk_id={resId}
-            feedback={feedback}
-            sessionId={sessionId}
-            aplctn_cd={aplctn_cd}/>}
+        {responseReceived && <Feedback />}
         {successMessage && <Alert color="success"><span>{successMessage}</span></Alert>}
       </Box>
 

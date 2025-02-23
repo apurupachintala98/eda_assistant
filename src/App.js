@@ -13,7 +13,6 @@ function App() {
                 newChatButtonLabel={config.newChatButtonLabel}
                 apiPath={config.apiPaths.getResponse}
                 sqlUrl={config.apiPaths.runQuery}
-                feedback={config.apiPaths.feedback}
                 aplctn_cd={config.aplctn_cd}
                 app_id={config.app_id}
                 edadip_api_key={config.edadip_api_key}

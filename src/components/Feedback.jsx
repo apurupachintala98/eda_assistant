@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 const ThumbsUpIcon = ({ isSelected }) => (
   <svg
-    className={`w-[16px] h-[16px] ${isSelected ? 'text-blue-600' : 'text-gray-800 dark:text-white'}`}
-    aria-hidden="true"
+  className={`w-[16px] h-[16px] ${isSelected ? 'text-blue-600' : 'text-gray-800 dark:text-white'}`}
+      aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     width="16"
     height="16"
@@ -26,9 +26,9 @@ const ThumbsUpIcon = ({ isSelected }) => (
 );
 
 const ThumbsDownIcon = ({ isSelected }) => (
-  <svg
+    <svg
     className={`w-[16px] h-[16px] ${isSelected ? 'text-red-600' : 'text-gray-800 dark:text-white'}`}
-    aria-hidden="true"
+        aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     width="16"
     height="16"
@@ -72,7 +72,7 @@ const CommentIcon = () => (
   </svg>
 );
 
-const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
+const Feedback = ({ fdbk_id, routeCd, requestId, appCd }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [isCommentBoxVisible, setIsCommentBoxVisible] = useState(false);
@@ -91,24 +91,21 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
         setIsLiked(false);
       }
     }
+    
+    // Prepare payload based on feedback type
+    const payload = {
+      fdbk_id,
+      fdbk_actn: type === 'like' ? true : false, // Set feedback to true for like, false for dislike
+    };
+
     try {
-      const url = `${feedback}`;
-      const payload = {
-        aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
-        fdbk_id,
-        fdbk_actn: type === 'like' ? true : false,
-      };
-      const response = await fetch(
-        url,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
-        }
-      );
+      const response = await fetch(`http://10.126.192.122:8000/get_llm_feedback/?app_cd=${appCd}&request_id=${requestId}&route_cd=${routeCd}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to update feedback status');
@@ -122,24 +119,19 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
     e.preventDefault();
     if (comment.trim() === '') return;
 
+    const payload = {
+      fdbk_id,
+      comment: comment.trim(),
+    };
+
     try {
-      const url = `${feedback}`;
-      const payload = {
-        aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
-        fdbk_id,
-        comment: comment.trim(),
-      };
-      const response = await fetch(
-        url,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
-        }
-      );
+      const response = await fetch(`http://10.126.192.122:8000/get_llm_feedback/?app_cd=${appCd}&request_id=${requestId}&route_cd=${routeCd}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to submit comment');
@@ -162,7 +154,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       <div className="flex items-center space-x-4">
         <p className="feedback-text font-bold m-0">Was this response helpful?</p>
         <div className="flex items-center space-x-2">
-          <button
+           <button
             onClick={() => handleFeedback('like')}
             className="text-gray-500 hover:text-gray-800"
           >
