@@ -29,7 +29,7 @@ function UserChat(props) {
     isLoading, setIsLoading,
     successMessage, setSuccessMessage,
     showInitialView, setShowInitialView,
-    sessionId, setRequestId, apiPath, aplctn_cd, sqlUrl,feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
+    sessionId, setRequestId, apiPath,user_id, aplctn_cd, sqlUrl,feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
   } = props;
 
   const endOfMessagesRef = useRef(null);
