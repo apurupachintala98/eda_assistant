@@ -3,8 +3,8 @@
     "title": "Chat Assistant",
     "newChatButtonLabel": "New Chat",
     "apiPaths": {
-        "getResponse": "https://sfassist.edagenaidev.awsdns.internal.das/api/cortex/complete/",
-        "feedback": "https://sfassist.edagenaidev.awsdns.internal.das/update_feedback/"
+        "getResponse": "http://localhost:8000/api/cortex/complete/",
+        "feedback": "http://10.126.192.122:8100/update_feedback/"
     },
     "aplctn_cd": "edagnai",
     "user_id": "abc1234",
