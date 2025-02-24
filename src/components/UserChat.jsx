@@ -172,7 +172,9 @@ function UserChat(props) {
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
       const json = await response.json();
+      console.log(json);
       const data = json.modelreply;
+      console.log(data);
       setApiResponse(data);
       const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
       setResId(newResId);
