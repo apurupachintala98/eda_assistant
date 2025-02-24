@@ -84,10 +84,10 @@ function UserChat(props) {
   }
 
   function updateChatLogFromApiResponse(apiResponse, currentChatLog) {
-    if (apiResponse && apiResponse.modelreply) {
+    if (apiResponse && apiResponse.modelreply && apiResponse.modelreply.response) {
       const botMessage = {
         role: 'assistant',
-        content: apiResponse.modelreply,
+        content: apiResponse.response,
       };
       setChatLog([...currentChatLog, botMessage]);
     }
@@ -172,7 +172,7 @@ function UserChat(props) {
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
       const json = await response.json();
-      const data = json.modelreply.body;
+      const data = json.modelreply;
       setApiResponse(data);
       const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
       setResId(newResId);
@@ -192,15 +192,15 @@ function UserChat(props) {
       };
       let isSQLResponse = false;
       let modelReply = 'No valid reply found.'; // Default message
-      if (data.modelreply) {
+      if (data.response) {
         // Handling object with nested objects scenario
-        if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
+        if (typeof data.response === 'object' && !Array.isArray(data.response) && Object.keys(data.response).length > 0) {
           // Generate table from nested object data
-          const keys = Object.keys(data.modelreply);
-          const columns = Object.keys(data.modelreply[keys[0]]); // assuming uniform structure
+          const keys = Object.keys(data.response);
+          const columns = Object.keys(data.response[keys[0]]); // assuming uniform structure
           const rows = columns.map(column => ({
             column,
-            values: keys.map(key => data.modelreply[key][column])
+            values: keys.map(key => data.response[key][column])
           }));
 
           modelReply = (
@@ -213,7 +213,7 @@ function UserChat(props) {
                   {keys.map((key, rowIndex) => (
                     <tr key={key}>
                       {columns.map(column => (
-                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data.modelreply[key][column])}</td>
+                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data.response[key][column])}</td>
                       ))}
                     </tr>
                   ))}
@@ -221,22 +221,22 @@ function UserChat(props) {
               </table>
             </div>
           );
-        } else if (Array.isArray(data.modelreply) && data.modelreply.every(item => typeof item === 'object')) {
+        } else if (Array.isArray(data.response) && data.response.every(item => typeof item === 'object')) {
           // Handling array of objects scenario
-          const columnCount = Object.keys(data.modelreply[0]).length;
-          const rowCount = data.modelreply.length;
+          const columnCount = Object.keys(data.response[0]).length;
+          const rowCount = data.response.length;
           modelReply = (
             <div style={{ display: 'flex', alignItems: 'start' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>
                   <tr>
-                    {Object.keys(data.modelreply[0]).map((key) => (
+                    {Object.keys(data.response[0]).map((key) => (
                       <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {data.modelreply.map((row, rowIndex) => (
+                  {data.response.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       {Object.values(row).map((val, colIndex) => (
                         <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
@@ -247,16 +247,16 @@ function UserChat(props) {
               </table>
             </div>
           );
-        } else if (typeof data.modelreply === 'string') {
+        } else if (typeof data.response === 'string') {
           const sqlRegex = /```sql([\s\S]*?)```/g;
           const parts = [];
           let lastIndex = 0;
           let match;
-          while ((match = sqlRegex.exec(data.modelreply)) !== null) {
+          while ((match = sqlRegex.exec(data.response)) !== null) {
             if (match.index > lastIndex) {
               parts.push(
                 <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
-                  {data.modelreply.slice(lastIndex, match.index).trim()}
+                  {data.response.slice(lastIndex, match.index).trim()}
                 </p>
               );
             }
@@ -279,8 +279,8 @@ function UserChat(props) {
             }
             lastIndex = sqlRegex.lastIndex;
           }
-          if (lastIndex < data.modelreply.length) {
-            const remainingContent = data.modelreply.slice(lastIndex).trim();
+          if (lastIndex < data.response.length) {
+            const remainingContent = data.response.slice(lastIndex).trim();
             if (/SELECT|WHERE|FROM/i.test(remainingContent)) {
               try {
                 parts.push(
@@ -311,13 +311,13 @@ function UserChat(props) {
               {parts}
             </div>
           );
-          const raw = data.modelreply;
+          const raw = data.response;
           setRawResponse(raw);
           setStoredResponse(modelReply)
           setShowButton(true); // Show "Show SQL" button
           setShowExecuteButton(true); // Show "Execute SQL" button
         } else {
-          modelReply = convertToString(data.modelreply);
+          modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
           setChatLog([...newChatLog, botMessage]);
         }
