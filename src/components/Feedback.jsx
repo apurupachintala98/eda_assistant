@@ -77,6 +77,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
   const [isDisliked, setIsDisliked] = useState(false);
   const [isCommentBoxVisible, setIsCommentBoxVisible] = useState(false);
   const [comment, setComment] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); 
 
   const handleFeedback = async (type) => {
     // Update states based on the feedback type
@@ -116,6 +117,8 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       if (!response.ok) {
         throw new Error('Failed to update feedback status');
       }
+      const message = await response.text();
+      setSuccessMessage(message);
     } catch (error) {
       console.error('Error updating feedback status:', error);
     }
@@ -152,10 +155,11 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       if (!response.ok) {
         throw new Error('Failed to submit comment');
       }
-
+      const message = await response.text();
       // Clear the comment box
       setComment('');
       setIsCommentBoxVisible(false);
+      setSuccessMessage(message);
     } catch (error) {
       console.error('Error submitting comment:', error);
     }
@@ -220,6 +224,12 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+        {/* Display success message if present */}
+        {successMessage && (
+        <div className="text-green-500 mt-2">
+          {successMessage}
         </div>
       )}
     </div>

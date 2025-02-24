@@ -195,13 +195,10 @@ function UserChat(props) {
       };
       let isSQLResponse = false;
       let modelReply = 'No valid reply found.'; // Default message
-      if (!data || !data.response) {
-        // Null or undefined response handling
-        const noDataMessage = {
-          role: 'assistant',
-          content: "Unable to fetch the data"
-        };
-        setChatLog([...newChatLog, noDataMessage]);
+      if (!data.response) {
+        const defaultReply = json.modelreply || 'No valid reply found.';
+        const botMessage = { role: 'assistant', content: defaultReply };
+        setChatLog([...newChatLog, botMessage]);
       } else {
         // Handling object with nested objects scenario
         if (typeof data.response === 'object' && !Array.isArray(data.response) && Object.keys(data.response).length > 0) {
