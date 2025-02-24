@@ -84,14 +84,17 @@ function UserChat(props) {
   }
 
   function updateChatLogFromApiResponse(apiResponse, currentChatLog) {
-    if (apiResponse && apiResponse.modelreply && apiResponse.modelreply.response) {
-      const botMessage = {
-        role: 'assistant',
-        content: apiResponse.response,
-      };
-      setChatLog([...currentChatLog, botMessage]);
+    if (apiResponse && apiResponse.response) {  // Check that the response exists
+        let content = apiResponse.response;
+        // Assume content is already properly formatted for display
+        const botMessage = {
+            role: 'assistant',
+            content: content
+        };
+        setChatLog([...currentChatLog, botMessage]); // Update the chat log
     }
-  }
+}
+
 
   const handleInputFocusOrChange = () => {
     setShowInitialView(false);
