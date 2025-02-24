@@ -29,7 +29,7 @@ function UserChat(props) {
     isLoading, setIsLoading,
     successMessage, setSuccessMessage,
     showInitialView, setShowInitialView,
-    sessionId, setRequestId, apiPath,user_id, aplctn_cd, sqlUrl,feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
+    sessionId, setRequestId, apiPath, user_id, aplctn_cd, sqlUrl, feedback, customStyles = {}, chatbotImage, userImage, handleNewChat, suggestedPrompts, showButton, setShowButton, showExecuteButton, setShowExecuteButton,
   } = props;
 
   const endOfMessagesRef = useRef(null);
@@ -85,15 +85,15 @@ function UserChat(props) {
 
   function updateChatLogFromApiResponse(apiResponse, currentChatLog) {
     if (apiResponse && apiResponse.response) {  // Check that the response exists
-        let content = apiResponse.response;
-        // Assume content is already properly formatted for display
-        const botMessage = {
-            role: 'assistant',
-            content: content
-        };
-        setChatLog([...currentChatLog, botMessage]); // Update the chat log
+      let content = apiResponse.response;
+      // Assume content is already properly formatted for display
+      const botMessage = {
+        role: 'assistant',
+        content: content
+      };
+      setChatLog([...currentChatLog, botMessage]); // Update the chat log
     }
-}
+  }
 
 
   const handleInputFocusOrChange = () => {
@@ -138,7 +138,7 @@ function UserChat(props) {
     setShowResponse(false);
     try {
       const url = `${apiPath}`;
-       const payload = {
+      const payload = {
         aplctn_cd: aplctn_cd,
         session_Id: sessionId,
         user_id: user_id,
@@ -175,9 +175,7 @@ function UserChat(props) {
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
       const json = await response.json();
-      console.log(json);
       const data = json.modelreply;
-      console.log(data);
       setApiResponse(data);
       const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
       setResId(newResId);
@@ -197,7 +195,14 @@ function UserChat(props) {
       };
       let isSQLResponse = false;
       let modelReply = 'No valid reply found.'; // Default message
-      if (data.response) {
+      if (!data || !data.response) {
+        // Null or undefined response handling
+        const noDataMessage = {
+          role: 'assistant',
+          content: "Unable to fetch the data"
+        };
+        setChatLog([...newChatLog, noDataMessage]);
+      } else {
         // Handling object with nested objects scenario
         if (typeof data.response === 'object' && !Array.isArray(data.response) && Object.keys(data.response).length > 0) {
           // Generate table from nested object data
@@ -411,12 +416,12 @@ function UserChat(props) {
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
-        {responseReceived && 
-        <Feedback  
+        {responseReceived &&
+          <Feedback
             fdbk_id={resId}
             feedback={feedback}
             sessionId={sessionId}
-            aplctn_cd={aplctn_cd}/>}
+            aplctn_cd={aplctn_cd} />}
         {successMessage && <Alert color="success"><span>{successMessage}</span></Alert>}
       </Box>
 
