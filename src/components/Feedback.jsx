@@ -99,7 +99,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       const url = `${feedback}`;
       const payload = {
         aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
+        session_id: sessionId,
         fdbk_id,
         fdbk_actn: type === 'like' ? true : false,
       };
@@ -137,7 +137,7 @@ const Feedback = ({ fdbk_id, sessionId, aplctn_cd, feedback }) => {
       const url = `${feedback}`;
       const payload = {
         aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
+        session_id: sessionId,
         fdbk_id,
         comment: comment.trim(),
       };

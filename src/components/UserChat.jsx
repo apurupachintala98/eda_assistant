@@ -140,7 +140,7 @@ function UserChat(props) {
       const url = `${apiPath}`;
       const payload = {
         aplctn_cd: aplctn_cd,
-        session_Id: sessionId,
+        session_id: sessionId,
         user_id: user_id,
         prompt: preparedChatLog
       };
