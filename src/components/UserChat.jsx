@@ -196,7 +196,7 @@ function UserChat(props) {
       let isSQLResponse = false;
       let modelReply = 'No valid reply found.'; // Default message
       if (!data.response) {
-        const defaultReply = json.modelreply || 'No valid reply found.';
+        const defaultReply = json.modelreply || 'Internal server error.';
         const botMessage = { role: 'assistant', content: defaultReply };
         setChatLog([...newChatLog, botMessage]);
       } else {
