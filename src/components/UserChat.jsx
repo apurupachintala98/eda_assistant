@@ -198,6 +198,7 @@ function UserChat(props) {
         return String(input);
       };
       let isSQLResponse = false;
+      const sqlRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i;
       let modelReply = 'No valid reply found.'; // Default message
       if (!data.response) {
         const defaultReply = json.modelreply || 'Internal server error.';
@@ -336,7 +337,7 @@ function UserChat(props) {
           const raw = data.response;
           setRawResponse(raw);
           setStoredResponse(modelReply)
-          if (sqlRegex.test(data.modelreply) || /SELECT|FROM|WHERE/i.test(data.modelreply)) {
+          if (sqlRegex.test(data.response) || /SELECT|FROM|WHERE/i.test(data.response)) {
             setShowButton(true); // Show "Show SQL" button
             setShowExecuteButton(true); // Show "Execute SQL" button
           } else {
@@ -376,28 +377,28 @@ function UserChat(props) {
     handleMessageSubmit(prompt, true);
   };
 
-  // function handleShowResponse() {
-  //   setShowResponse((prev) => {
-  //     const newVisibility = !prev; // Toggle SQL response visibilit
-  //     if (newVisibility) {
-  //       const botMessage = {
-  //         role: 'assistant',
-  //         content: storedResponse,
-  //       };
+  function handleShowResponse() {
+    setShowResponse((prev) => {
+      const newVisibility = !prev; // Toggle SQL response visibilit
+      if (newVisibility) {
+        const botMessage = {
+          role: 'assistant',
+          content: storedResponse,
+        };
 
-  //       setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
-  //     } else {
-  //       setChatLog((prevChatLog) => {
-  //         if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
-  //           return prevChatLog.slice(0, prevChatLog.length - 1);
-  //         }
-  //         return prevChatLog;
-  //       });
-  //     }
+        setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
+      } else {
+        setChatLog((prevChatLog) => {
+          if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
+            return prevChatLog.slice(0, prevChatLog.length - 1);
+          }
+          return prevChatLog;
+        });
+      }
 
-  //     return newVisibility;
-  //   });
-  // }
+      return newVisibility;
+    });
+  }
 
   const handleButtonClick = async () => {
     try {
@@ -646,11 +647,11 @@ function UserChat(props) {
       }}>
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
-        {/* {showButton && (
+        {showButton && (
           <><Typography>Please see the details below</Typography><Button variant="contained" color="primary" onClick={handleShowResponse} sx={{ mr: 2 }}>
             {showResponse ? "Hide SQL" : "Show SQL"}
           </Button></>
-        )} */}
+        )}
         {showExecuteButton && (
           <Button variant="contained" color="primary" onClick={handleButtonClick}>
             Execute SQL
