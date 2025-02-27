@@ -421,15 +421,16 @@ function UserChat(props) {
       await apiCortexComplete(data);
 
       const convertToString = (input) => {
-        if (typeof input === 'string' || typeof input === 'number' || typeof input === 'boolean') {
-          return String(input);
+        if (typeof input === 'string') {
+          return input;
         } else if (Array.isArray(input)) {
-          return input.map(convertToString).join(', '); 
+          return input.map(convertToString).join(', ');
         } else if (typeof input === 'object' && input !== null) {
-          return JSON.stringify(input, null, 2); 
-        } else {
-          return String(input); 
+          return Object.entries(input)
+            .map(([key, value]) => `${key}: ${convertToString(value)}`)
+            .join(', ');
         }
+        return String(input);
       };
       
 
