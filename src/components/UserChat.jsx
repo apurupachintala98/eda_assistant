@@ -391,8 +391,7 @@ function UserChat(props) {
   //   });
   // }
 
-  const handleButtonClick = async () => {
-    const userQuestion = input; 
+  const handleButtonClick = async (userQuestion) => {
     try {
       const url = `${sqlUrl}`;
       const payload = {
@@ -460,69 +459,33 @@ function UserChat(props) {
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-     if (data) {
-        if (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
-          // Generate table from nested object data
-          const keys = Object.keys(data);
-          const columns = Object.keys(data[keys[0]]); // assuming uniform structure
-          const rows = columns.map(column => ({
-            column,
-            values: keys.map(key => data[key][column])
-          }));
-
+      if (data) {
+        if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
+          const columns = Object.keys(data[0]);
           modelReply = (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>
-                  <tr>{columns.map(column => <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {keys.map((key, rowIndex) => (
-                    <tr key={key}>
-                      {columns.map(column => (
-                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data[key][column])}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        } else if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
-          // Handling array of objects scenario
-          const columnCount = Object.keys(data[0]).length;
-          const rowCount = data.length;
-          modelReply = (
-            <div style={{ display: 'flex', alignItems: 'start' }}>
-              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                <thead>
                   <tr>
-                    {Object.keys(data[0]).map((key) => (
-                      <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                    {columns.map(column => (
+                      <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>
+                        {column}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((row, rowIndex) => (
+                  {data.map((item, rowIndex) => (
                     <tr key={rowIndex}>
-                      {Object.values(row).map((val, colIndex) => (
-                        <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                      {columns.map(column => (
+                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>
+                          {convertToString(item[column])}
+                        </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {(rowCount > 1 && columnCount > 1) && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<BarChartIcon />}
-                  sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
-                  onClick={handleGraphClick}
-                >
-                  Graph View
-                </Button>
-              )}
             </div>
           );
         } else if (typeof data === 'string') {
@@ -567,7 +530,7 @@ function UserChat(props) {
       session_id: sessionId,
       user_id: user_id,
       output_exec_query: execData,
-      prompt: userQuestion 
+      prompt: userQuestion
     };
     const response = await fetch(
       url,
@@ -697,6 +660,11 @@ function UserChat(props) {
                 onChange={(e) => {
                   setInput(e.target.value);
                   handleInputFocusOrChange(); // Ensure elements disappear when typing
+                }}
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    handleButtonClick(input);
+                  }
                 }}
                 onFocus={handleInputFocusOrChange}
                 inputProps={{ maxLength: 400 }}
