@@ -368,30 +368,7 @@ function UserChat(props) {
     handleMessageSubmit(prompt, true);
   };
 
-  // function handleShowResponse() {
-  //   setShowResponse((prev) => {
-  //     const newVisibility = !prev; // Toggle SQL response visibilit
-  //     if (newVisibility) {
-  //       const botMessage = {
-  //         role: 'assistant',
-  //         content: storedResponse,
-  //       };
-
-  //       setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
-  //     } else {
-  //       setChatLog((prevChatLog) => {
-  //         if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
-  //           return prevChatLog.slice(0, prevChatLog.length - 1);
-  //         }
-  //         return prevChatLog;
-  //       });
-  //     }
-
-  //     return newVisibility;
-  //   });
-  // }
-
-  const handleButtonClick = async (userQuestion) => {
+  const handleButtonClick = async () => {
     try {
       const url = `${sqlUrl}`;
       const payload = {
@@ -433,67 +410,65 @@ function UserChat(props) {
           ),
         };
 
-        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
-        throw new Error(errorMessage); // Re-throw the error for logging purposes
+        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); 
+        throw new Error(errorMessage); 
       }
 
       const data = await response.json();
       console.log(data);
       setData(data);
       setOutputExecQuery(data);
-      await apiCortexComplete(data, userQuestion);
+      await apiCortexComplete(data);
 
       const convertToString = (input) => {
-        if (typeof input === 'string') {
-          return input;
+        if (typeof input === 'string' || typeof input === 'number' || typeof input === 'boolean') {
+          return String(input);
         } else if (Array.isArray(input)) {
-          return input.map(convertToString).join(', ');
+          return input.map(convertToString).join(', '); 
         } else if (typeof input === 'object' && input !== null) {
-          return Object.entries(input)
-            .map(([key, value]) => `${key}: ${convertToString(value)}`)
-            .join(', ');
+          return JSON.stringify(input, null, 2); 
+        } else {
+          return String(input); 
         }
-        return String(input);
       };
+      
 
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-      if (data) {
-        if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
-          const columns = Object.keys(data[0]);
-          modelReply = (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                <thead>
-                  <tr>
+      if (data && data.modelreply && Array.isArray(data.modelreply)) {
+        const columns = Object.keys(data.modelreply[0]); // Assuming all objects have the same structure
+        modelReply = (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <thead>
+                <tr>
+                  {columns.map(column => (
+                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.modelreply.map((item, rowIndex) => (
+                  <tr key={rowIndex}>
                     {columns.map(column => (
-                      <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>
-                        {column}
-                      </th>
+                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>
+                        {convertToString(item[column])}
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {columns.map(column => (
-                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>
-                          {convertToString(item[column])}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        } else if (typeof data === 'string') {
-          modelReply = data;
-          setIsLoading(true);
-        } else {
-          modelReply = convertToString(data);
-        }
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      } else if (typeof data === 'string') {
+        modelReply = data;
+        setIsLoading(true);
+      } else {
+        modelReply = convertToString(data);
       }
 
       const botMessage = {
@@ -523,14 +498,14 @@ function UserChat(props) {
     }
   }
 
-  const apiCortexComplete = async (execData, userQuestion) => {
+  const apiCortexComplete = async (execData) => {
     const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
       session_id: sessionId,
       user_id: user_id,
       output_exec_query: execData,
-      prompt: userQuestion
+      // prompt: userQuestion
     };
     const response = await fetch(
       url,
@@ -607,11 +582,6 @@ function UserChat(props) {
       }}>
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
-        {/* {showButton && (
-          <><Typography>Please see the details below</Typography><Button variant="contained" color="primary" onClick={handleShowResponse} sx={{ mr: 2 }}>
-            {showResponse ? "Hide SQL" : "Show SQL"}
-          </Button></>
-        )} */}
         {showExecuteButton && (
           <Button variant="contained" color="primary" onClick={handleButtonClick}>
             Execute SQL
@@ -661,11 +631,7 @@ function UserChat(props) {
                   setInput(e.target.value);
                   handleInputFocusOrChange(); // Ensure elements disappear when typing
                 }}
-                onKeyPress={e => {
-                  if (e.key === 'Enter') {
-                    handleButtonClick(input);
-                  }
-                }}
+                
                 onFocus={handleInputFocusOrChange}
                 inputProps={{ maxLength: 400 }}
                 InputProps={{
