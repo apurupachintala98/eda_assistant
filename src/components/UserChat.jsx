@@ -441,42 +441,47 @@ function UserChat(props) {
       let modelReply = 'No valid reply found.'; // Default message
 
       if (data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.length > 0) {
-        const columns = Object.keys(data.modelreply.response[0] || {});
+        const columns = Object.keys(data.modelreply.response[0]);
+        console.log(columns);
         const rows = data.modelreply.response;
-    
-        modelReply = (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>
-                  {columns.map(column => (
-                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {columns.map(column => (
-                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(row[column])}</td>
-                    ))}
-                  </tr>
+        console.log(rows);
+
+        
+    modelReply = (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <thead>
+            <tr>
+              {columns.map(column => (
+                <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {columns.map(column => (
+                  <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
+                    {convertToString(row[column])}
+                  </td>
                 ))}
-              </tbody>
-            </table>
-            {(rows.length > 1 && columns.length > 1) && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<BarChartIcon />}
-                sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
-                onClick={handleGraphClick}
-              >
-                Graph View
-              </Button>
-            )}
-          </div>
-        );
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {(rows.length > 1 && columns.length > 1) && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<BarChartIcon />}
+            sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={() => console.log('Graph View Clicked')}
+          >
+            Graph View
+          </Button>
+        )}
+      </div>
+    );
     } else if (typeof data === 'string') {
         modelReply = data.modelreply.response;
         setIsLoading(true);
