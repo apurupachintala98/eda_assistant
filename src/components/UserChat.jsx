@@ -394,17 +394,17 @@ function UserChat(props) {
 
   const handleButtonClick = async () => {
     try {
-      const sanitizeQuery = (query) => {
-        let cleanedQuery = query
-          .replace(/\\n/g, ' ')      // Remove newlines
-          .replace(/\s+/g, ' ')     // Remove extra spaces
-          .replace(/--.*?;/g, '')   // Remove SQL comments
-          .trim();                  // Trim whitespace from start/end
-        return cleanedQuery;
-      };
+      // const sanitizeQuery = (query) => {
+      //   let cleanedQuery = query
+      //     .replace(/\\n/g, ' ')      // Remove newlines
+      //     .replace(/\s+/g, ' ')     // Remove extra spaces
+      //     .replace(/--.*?;/g, '')   // Remove SQL comments
+      //     .trim();                  // Trim whitespace from start/end
+      //   return cleanedQuery;
+      // };
   
-      const sanitizedResponse = sanitizeQuery(rawResponse);
-      const encodedResponse = encodeURIComponent(sanitizedResponse);
+      // const sanitizedResponse = sanitizeQuery(rawResponse);
+      // const encodedResponse = encodeURIComponent(sanitizedResponse);
   
 
       const url = `${sqlUrl}`;
@@ -412,7 +412,7 @@ function UserChat(props) {
         aplctn_cd: aplctn_cd,
         session_id: sessionId,
         user_id: user_id,
-        exec_query: encodedResponse,
+        exec_query: rawResponse,
       };
       const response = await fetch(
         url,
