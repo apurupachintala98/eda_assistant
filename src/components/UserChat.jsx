@@ -460,10 +460,10 @@ function UserChat(props) {
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-     if (!data) {
-        const defaultReply = modelreply || 'Internal server error.';
+     if (data.modelreply === null) {
+        const defaultReply = "Data Not Found";
         const botMessage = { role: 'assistant', content: defaultReply };
-        setChatLog([...newChatLog, botMessage]);
+        setChatLog([...prevChatLog, botMessage]);
       } else {
 
         if (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
