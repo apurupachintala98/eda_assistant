@@ -378,7 +378,7 @@ function UserChat(props) {
         aplctn_cd: aplctn_cd,
         session_id: sessionId,
         user_id: user_id,
-        exec_query: rawResponse,
+        exec_query: JSON.stringify(rawResponse),
         prompt: promptQuestion
       };
       const response = await fetch(
