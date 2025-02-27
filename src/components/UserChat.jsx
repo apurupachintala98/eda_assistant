@@ -46,6 +46,7 @@ function UserChat(props) {
   const [showResponse, setShowResponse] = useState(false);
   const [data, setData] = useState('');
   const [rawResponse, setRawResponse] = useState('');
+  const [promptQuestion, setPromptQuestion] = useState('');
   const [showSQLButtons, setShowSQLButtons] = useState(false);
   const [outputExecQuery, setOutputExecQuery] = useState('');
 
@@ -183,6 +184,8 @@ function UserChat(props) {
       setApiResponse(data);
       const newResId = data.fdbk_id; // Assuming fdbk_id is part of the response
       setResId(newResId);
+      const promptQuestion = data.prompt;
+      setPromptQuestion(promptQuestion);
       setResponseReceived(false);
       updateChatLogFromApiResponse(data, newChatLog);
       const convertToString = (input) => {
@@ -376,6 +379,7 @@ function UserChat(props) {
         session_id: sessionId,
         user_id: user_id,
         exec_query: rawResponse,
+        prompt: promptQuestion
       };
       const response = await fetch(
         url,
@@ -418,7 +422,7 @@ function UserChat(props) {
       console.log(data);
       setData(data);
       setOutputExecQuery(data);
-      await apiCortexComplete(data);
+      await apiCortexComplete(data, promptQuestion);
 
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -535,14 +539,14 @@ function UserChat(props) {
     }
   }
 
-  const apiCortexComplete = async (execData) => {
+  const apiCortexComplete = async (execData, promptQuestion) => {
     const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
       session_id: sessionId,
       user_id: user_id,
       output_exec_query: execData,
-      // prompt: userQuestion
+      prompt: promptQuestion
     };
     const response = await fetch(
       url,
