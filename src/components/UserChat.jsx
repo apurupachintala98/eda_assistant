@@ -441,49 +441,22 @@ function UserChat(props) {
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-      if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
-        // Generate table from nested object data
-        const keys = Object.keys(data.modelreply);
-        const columns = Object.keys(data.modelreply[keys[0]]); // assuming uniform structure
-        const rows = columns.map(column => ({
-          column,
-          values: keys.map(key => data.modelreply[key][column])
-        }));
-
-        modelReply = (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>{columns.map(column => <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>)}</tr>
-              </thead>
-              <tbody>
-                {keys.map((key, rowIndex) => (
-                  <tr key={key}>
-                    {columns.map(column => (
-                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data.modelreply[key][column])}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
-      } else if (Array.isArray(data.modelreply) && data.modelreply.every(item => typeof item === 'object')) {
-        // Handling array of objects scenario
-        const columnCount = Object.keys(data.modelreply[0]).length;
-        const rowCount = data.modelreply.length;
+      if (data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.every(item => typeof item === 'object')) {
+        // Handling array of objects scenario from response property
+        const columnCount = Object.keys(data.modelreply.response[0]).length;
+        const rowCount = data.modelreply.response.length;
         modelReply = (
           <div style={{ display: 'flex', alignItems: 'start' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr>
-                  {Object.keys(data.modelreply[0]).map((key) => (
+                  {Object.keys(data.modelreply.response[0]).map((key) => (
                     <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {data.modelreply.map((row, rowIndex) => (
+                {data.modelreply.response.map((row, rowIndex) => (
                   <tr key={rowIndex}>
                     {Object.values(row).map((val, colIndex) => (
                       <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
