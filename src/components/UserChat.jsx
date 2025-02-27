@@ -47,6 +47,8 @@ function UserChat(props) {
   const [data, setData] = useState('');
   const [rawResponse, setRawResponse] = useState('');
   const [showSQLButtons, setShowSQLButtons] = useState(false);
+  const [outputExecQuery, setOutputExecQuery] = useState('');
+
 
   useLayoutEffect(() => {
     if (endOfMessagesRef.current) {
@@ -255,16 +257,16 @@ function UserChat(props) {
                 </tbody>
               </table>
               {(rowCount > 1 && columnCount > 1) && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<BarChartIcon />}
-                sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
-                onClick={handleGraphClick}
-              >
-                Graph View
-              </Button>
-            )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<BarChartIcon />}
+                  sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
+                  onClick={handleGraphClick}
+                >
+                  Graph View
+                </Button>
+              )}
             </div>
           );
         } else if (typeof data.response === 'string') {
@@ -394,15 +396,15 @@ function UserChat(props) {
       const sanitizeQuery = (query) => {
         // Example: Remove line breaks, extra spaces, and other unnecessary parts
         let cleanedQuery = query
-          .replace(/\\n/g, ' ') 
-         .replace(/\s+/g, ' ') 
-          .replace(/--.*?;/g, '') 
-           .trim(); 
+          .replace(/\\n/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/--.*?;/g, '')
+          .trim();
         return cleanedQuery;
       };
       const decodedStoredResponse = encodeURIComponent(rawResponse);
       const encodedResponse = sanitizeQuery(decodedStoredResponse);
-     
+
       const url = `${sqlUrl}`;
       const payload = {
         aplctn_cd: aplctn_cd,
@@ -424,7 +426,7 @@ function UserChat(props) {
       // Check if response is okay
       if (!response.ok) {
         let errorMessage = '';
- 
+
         // Handle different status codes
         if (response.status === 404) {
           errorMessage = '404 - Not Found';
@@ -433,7 +435,7 @@ function UserChat(props) {
         } else {
           errorMessage = `${response.status} - ${response.statusText}`;
         }
- 
+
         // Create an error message object
         const errorMessageContent = {
           role: 'assistant',
@@ -443,14 +445,17 @@ function UserChat(props) {
             </div>
           ),
         };
- 
+
         setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
         throw new Error(errorMessage); // Re-throw the error for logging purposes
       }
- 
+
       const data = await response.json();
       setData(data);
- 
+      setOutputExecQuery(data);
+
+      await apiCortexComplete();
+
       // Function to convert object to string
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -464,7 +469,7 @@ function UserChat(props) {
         }
         return String(input);
       };
- 
+
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
       if (data) {
@@ -472,7 +477,7 @@ function UserChat(props) {
         if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
           const columnCount = Object.keys(data[0]).length;
           const rowCount = data.length;
- 
+
           // Convert to a table-like format with borders for display
           modelReply = (
             <div style={{ display: 'flex', alignItems: 'start' }}>
@@ -517,12 +522,12 @@ function UserChat(props) {
           modelReply = convertToString(data);
         }
       }
- 
+
       const botMessage = {
         role: 'assistant',
         content: modelReply,
       };
- 
+
       setChatLog((prevChatLog) => [...prevChatLog, botMessage]); // Update chat log with assistant's message
     } catch (err) {
       // Handle network errors or other unexpected issues
@@ -535,13 +540,42 @@ function UserChat(props) {
           </div>
         ),
       };
- 
+
       setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
       console.error('Error:', err); // Log the error for debugging
     } finally {
       setIsLoading(false);// Set loading state to false
       setShowExecuteButton(false);
       setShowButton(false);
+    }
+  }
+
+  const apiCortexComplete = async () => {
+    const url = "http://10.126.192.122:8880/api_cortex_complete/";
+    const payload = {
+      aplctn_cd: aplctn_cd,
+      session_id: sessionId,
+      user_id: user_id,
+      output_exec_query: outputExecQuery,
+    };
+    const response = await fetch(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    // Handle the response from apiCortexComplete
+    if (response.ok) {
+      const responseData = await response.json();
+      // Process responseData
+    } else {
+      console.error('Failed to complete API request:', response.statusText);
+      // Error handling
     }
   }
 
