@@ -336,12 +336,20 @@ function UserChat(props) {
           const raw = data.response;
           setRawResponse(raw);
           setStoredResponse(modelReply)
-          setShowButton(true); // Show "Show SQL" button
-          setShowExecuteButton(true); // Show "Execute SQL" button
+          if (sqlRegex.test(data.modelreply) || /SELECT|FROM|WHERE/i.test(data.modelreply)) {
+            setShowButton(true); // Show "Show SQL" button
+            setShowExecuteButton(true); // Show "Execute SQL" button
+          } else {
+            // No SQL content found, ensure buttons remain hidden
+            setShowButton(false);
+            setShowExecuteButton(false);
+          }
         } else {
           modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
           setChatLog([...newChatLog, botMessage]);
+          setShowButton(false);
+        setShowExecuteButton(false);
         }
       }
     } catch (err) {
