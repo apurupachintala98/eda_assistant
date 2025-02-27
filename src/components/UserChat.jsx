@@ -271,11 +271,15 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data.response === 'string') {
-          const sqlRegex = /```sql([\s\S]*?)```/g;
+          const sqlRegex = /```sql([\s\S]*?)```/g; // Regex to detect SQL blocks in markdown format
+          const sqlKeywordRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i; // Regex to detect SQL keywords outside of blocks
           const parts = [];
           let lastIndex = 0;
           let match;
+          let containsSQL = false; // Flag to track SQL content
+
           while ((match = sqlRegex.exec(data.response)) !== null) {
+            containsSQL = true; // Set flag if SQL is detected in the block
             if (match.index > lastIndex) {
               parts.push(
                 <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
@@ -304,23 +308,15 @@ function UserChat(props) {
           }
           if (lastIndex < data.response.length) {
             const remainingContent = data.response.slice(lastIndex).trim();
-            if (/SELECT|WHERE|FROM/i.test(remainingContent)) {
-              try {
-                parts.push(
-                  <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
-                    <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {sqlFormatter(remainingContent)}
-                    </code>
-                  </pre>
-                );
-              } catch (err) {
-                console.error("SQL Formatting Error:", err);
-                parts.push(
-                  <pre key={`sql-remaining`} style={{ margin: '8px 0', color: 'red' }}>
-                    {remainingContent}
-                  </pre>
-                );
-              }
+            if (sqlKeywordRegex.test(remainingContent)) {
+              containsSQL = true; // Set flag if SQL keywords are detected in remaining content
+              parts.push(
+                <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
+                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {sqlFormatter(remainingContent)}
+                  </code>
+                </pre>
+              );
             } else {
               parts.push(
                 <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
@@ -329,22 +325,20 @@ function UserChat(props) {
               );
             }
           }
+
           modelReply = (
             <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
               {parts}
             </div>
           );
+
           const raw = data.response;
           setRawResponse(raw);
-          setStoredResponse(modelReply)
-          if (sqlRegex.test(data.response) || /SELECT|FROM|WHERE/i.test(data.response)) {
-            setShowButton(true); // Show "Show SQL" button
-            setShowExecuteButton(true); // Show "Execute SQL" button
-          } else {
-            // No SQL content found, ensure buttons remain hidden
-            setShowButton(false);
-            setShowExecuteButton(false);
-          }
+          setStoredResponse(modelReply);
+
+          // Set button visibility based on the presence of SQL
+          setShowButton(containsSQL);
+          setShowExecuteButton(containsSQL);
         } else {
           modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
