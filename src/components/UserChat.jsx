@@ -333,7 +333,7 @@ function UserChat(props) {
           );
 
           const raw = data.response;
-          setRawResponse(raw);
+          setRawResponse(JSON.stringify(raw));
           setStoredResponse(modelReply);
 
           // Set button visibility based on the presence of SQL
