@@ -125,7 +125,7 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedRes
                 sx={{ fontSize: 14, fontWeight: 'bold', whiteSpace: 'pre-line' }}
               >
                 {chat.isSQLResponse ? (
-                  <pre><code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
+                  <pre><code className="sql" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
                 ) : (
                   chat.role === 'assistant'
                     ? formatApiResponse(chat.content)

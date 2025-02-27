@@ -136,6 +136,8 @@ function UserChat(props) {
     setError(''); // Clear any previous error
     setShowInitialView(false);
     setShowResponse(false);
+    setShowButton(false);
+    setShowExecuteButton(false);
     try {
       const url = `${apiPath}`;
       const payload = {
@@ -252,6 +254,17 @@ function UserChat(props) {
                   ))}
                 </tbody>
               </table>
+              {(rowCount > 1 && columnCount > 1) && (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<BarChartIcon />}
+                sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
+                onClick={handleGraphClick}
+              >
+                Graph View
+              </Button>
+            )}
             </div>
           );
         } else if (typeof data.response === 'string') {
@@ -353,6 +366,185 @@ function UserChat(props) {
     handleMessageSubmit(prompt, true);
   };
 
+  function handleShowResponse() {
+    setShowResponse((prev) => {
+      const newVisibility = !prev; // Toggle SQL response visibilit
+      if (newVisibility) {
+        const botMessage = {
+          role: 'assistant',
+          content: storedResponse,
+        };
+
+        setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
+      } else {
+        setChatLog((prevChatLog) => {
+          if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
+            return prevChatLog.slice(0, prevChatLog.length - 1);
+          }
+          return prevChatLog;
+        });
+      }
+
+      return newVisibility;
+    });
+  }
+
+  const handleButtonClick = async () => {
+    try {
+      const sanitizeQuery = (query) => {
+        // Example: Remove line breaks, extra spaces, and other unnecessary parts
+        let cleanedQuery = query
+          .replace(/\\n/g, ' ') 
+         .replace(/\s+/g, ' ') 
+          .replace(/--.*?;/g, '') 
+           .trim(); 
+        return cleanedQuery;
+      };
+      const decodedStoredResponse = encodeURIComponent(rawResponse);
+      const encodedResponse = sanitizeQuery(decodedStoredResponse);
+     
+      const url = `${sqlUrl}`;
+      const payload = {
+        aplctn_cd: aplctn_cd,
+        session_id: sessionId,
+        user_id: user_id,
+        exec_query: encodedResponse,
+      };
+      const response = await fetch(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      // Check if response is okay
+      if (!response.ok) {
+        let errorMessage = '';
+ 
+        // Handle different status codes
+        if (response.status === 404) {
+          errorMessage = '404 - Not Found';
+        } else if (response.status === 500) {
+          errorMessage = '500 - Internal Server Error';
+        } else {
+          errorMessage = `${response.status} - ${response.statusText}`;
+        }
+ 
+        // Create an error message object
+        const errorMessageContent = {
+          role: 'assistant',
+          content: (
+            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+              <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{errorMessage}</p>
+            </div>
+          ),
+        };
+ 
+        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
+        throw new Error(errorMessage); // Re-throw the error for logging purposes
+      }
+ 
+      const data = await response.json();
+      setData(data);
+ 
+      // Function to convert object to string
+      const convertToString = (input) => {
+        if (typeof input === 'string') {
+          return input;
+        } else if (Array.isArray(input)) {
+          return input.map(convertToString).join(', ');
+        } else if (typeof input === 'object' && input !== null) {
+          return Object.entries(input)
+            .map(([key, value]) => `${key}: ${convertToString(value)}`)
+            .join(', ');
+        }
+        return String(input);
+      };
+ 
+      // Handle the response data similarly to handleSubmit
+      let modelReply = 'No valid reply found.'; // Default message
+      if (data) {
+        // Check if the response is a JSON array of objects
+        if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
+          const columnCount = Object.keys(data[0]).length;
+          const rowCount = data.length;
+ 
+          // Convert to a table-like format with borders for display
+          modelReply = (
+            <div style={{ display: 'flex', alignItems: 'start' }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                  <tr>
+                    {Object.keys(data[0]).map((key) => (
+                      <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {Object.values(row).map((val, colIndex) => (
+                        <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(rowCount > 1 && columnCount > 1) && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<BarChartIcon />}
+                  sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
+                  onClick={handleGraphClick}
+                >
+                  Graph View
+                </Button>
+              )}
+            </div>
+          );
+        } else if (typeof data === 'string') {
+          // If it's a string, display it as text and store it in the state
+          modelReply = data;
+          //setStoredResponse(data);
+          setIsLoading(true);
+        } else {
+          // Otherwise, convert to string
+          modelReply = convertToString(data);
+        }
+      }
+ 
+      const botMessage = {
+        role: 'assistant',
+        content: modelReply,
+      };
+ 
+      setChatLog((prevChatLog) => [...prevChatLog, botMessage]); // Update chat log with assistant's message
+    } catch (err) {
+      // Handle network errors or other unexpected issues
+      const fallbackErrorMessage = 'Error communicating with backend.';
+      const errorMessageContent = {
+        role: 'assistant',
+        content: (
+          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{fallbackErrorMessage}</p>
+          </div>
+        ),
+      };
+ 
+      setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
+      console.error('Error:', err); // Log the error for debugging
+    } finally {
+      setIsLoading(false);// Set loading state to false
+      setShowExecuteButton(false);
+      setShowButton(false);
+    }
+  }
+
   return (
 
     <Box sx={{
@@ -412,6 +604,16 @@ function UserChat(props) {
       }}>
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
+        {showButton && (
+          <><Typography>Please see the details below</Typography><Button variant="contained" color="primary" onClick={handleShowResponse} sx={{ mr: 2 }}>
+            {showResponse ? "Hide SQL" : "Show SQL"}
+          </Button></>
+        )}
+        {showExecuteButton && (
+          <Button variant="contained" color="primary" onClick={handleButtonClick}>
+            Execute SQL
+          </Button>
+        )}
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
         {responseReceived &&
           <Feedback
