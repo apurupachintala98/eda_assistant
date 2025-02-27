@@ -410,8 +410,8 @@ function UserChat(props) {
           ),
         };
 
-        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); 
-        throw new Error(errorMessage); 
+        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -432,37 +432,73 @@ function UserChat(props) {
         }
         return String(input);
       };
-      
+
 
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-      if (data && data.modelreply && Array.isArray(data.modelreply)) {
-        const columns = Object.keys(data.modelreply[0]); // Assuming all objects have the same structure
+      if (typeof data.modelreply === 'object' && !Array.isArray(data.modelreply) && Object.keys(data.modelreply).length > 0) {
+        // Generate table from nested object data
+        const keys = Object.keys(data.modelreply);
+        const columns = Object.keys(data.modelreply[keys[0]]); // assuming uniform structure
+        const rows = columns.map(column => ({
+          column,
+          values: keys.map(key => data.modelreply[key][column])
+        }));
+
         modelReply = (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
-                <tr>
-                  {columns.map(column => (
-                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>
-                      {column}
-                    </th>
-                  ))}
-                </tr>
+                <tr>{columns.map(column => <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>)}</tr>
               </thead>
               <tbody>
-                {data.modelreply.map((item, rowIndex) => (
-                  <tr key={rowIndex}>
+                {keys.map((key, rowIndex) => (
+                  <tr key={key}>
                     {columns.map(column => (
-                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>
-                        {convertToString(item[column])}
-                      </td>
+                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data.modelreply[key][column])}</td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        );
+      } else if (Array.isArray(data.modelreply) && data.modelreply.every(item => typeof item === 'object')) {
+        // Handling array of objects scenario
+        const columnCount = Object.keys(data.modelreply[0]).length;
+        const rowCount = data.modelreply.length;
+        modelReply = (
+          <div style={{ display: 'flex', alignItems: 'start' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <thead>
+                <tr>
+                  {Object.keys(data.modelreply[0]).map((key) => (
+                    <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.modelreply.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {Object.values(row).map((val, colIndex) => (
+                      <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {(rowCount > 1 && columnCount > 1) && (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<BarChartIcon />}
+                sx={{ display: 'flex', alignItems: 'center', padding: '8px 16px', marginLeft: '15px', width: '190px', fontSize: '10px', fontWeight: 'bold' }}
+                onClick={handleGraphClick}
+              >
+                Graph View
+              </Button>
+            )}
           </div>
         );
       } else if (typeof data === 'string') {
@@ -632,7 +668,7 @@ function UserChat(props) {
                   setInput(e.target.value);
                   handleInputFocusOrChange(); // Ensure elements disappear when typing
                 }}
-                
+
                 onFocus={handleInputFocusOrChange}
                 inputProps={{ maxLength: 400 }}
                 InputProps={{
