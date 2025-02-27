@@ -460,12 +460,7 @@ function UserChat(props) {
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-     if (data.modelreply === null) {
-        const defaultReply = "Data Not Found";
-        const botMessage = { role: 'assistant', content: defaultReply };
-        setChatLog([...prevChatLog, botMessage]);
-      } else {
-
+     if (data) {
         if (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
           // Generate table from nested object data
           const keys = Object.keys(data);
