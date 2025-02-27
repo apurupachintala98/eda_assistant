@@ -362,35 +362,34 @@ function UserChat(props) {
       setIsLoading(false); // Set loading state to false
       setResponseReceived(true);// Set loading state to false
     }
-
   };
 
   const handlePromptClick = async (prompt) => {
     handleMessageSubmit(prompt, true);
   };
 
-  function handleShowResponse() {
-    setShowResponse((prev) => {
-      const newVisibility = !prev; // Toggle SQL response visibilit
-      if (newVisibility) {
-        const botMessage = {
-          role: 'assistant',
-          content: storedResponse,
-        };
+  // function handleShowResponse() {
+  //   setShowResponse((prev) => {
+  //     const newVisibility = !prev; // Toggle SQL response visibilit
+  //     if (newVisibility) {
+  //       const botMessage = {
+  //         role: 'assistant',
+  //         content: storedResponse,
+  //       };
 
-        setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
-      } else {
-        setChatLog((prevChatLog) => {
-          if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
-            return prevChatLog.slice(0, prevChatLog.length - 1);
-          }
-          return prevChatLog;
-        });
-      }
+  //       setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
+  //     } else {
+  //       setChatLog((prevChatLog) => {
+  //         if (prevChatLog.length > 0 && prevChatLog[prevChatLog.length - 1].role === 'assistant') {
+  //           return prevChatLog.slice(0, prevChatLog.length - 1);
+  //         }
+  //         return prevChatLog;
+  //       });
+  //     }
 
-      return newVisibility;
-    });
-  }
+  //     return newVisibility;
+  //   });
+  // }
 
   const handleButtonClick = async () => {
     try {
@@ -415,7 +414,6 @@ function UserChat(props) {
       // Check if response is okay
       if (!response.ok) {
         let errorMessage = '';
-
         // Handle different status codes
         if (response.status === 404) {
           errorMessage = '404 - Not Found';
@@ -443,10 +441,8 @@ function UserChat(props) {
       console.log(data);
       setData(data);
       setOutputExecQuery(data);
-
       await apiCortexComplete(data);
 
-      // Function to convert object to string
       const convertToString = (input) => {
         if (typeof input === 'string') {
           return input;
@@ -462,13 +458,44 @@ function UserChat(props) {
 
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
-      if (data) {
-        // Check if the response is a JSON array of objects
-        if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
+
+     if (!data) {
+        const defaultReply = modelreply || 'Internal server error.';
+        const botMessage = { role: 'assistant', content: defaultReply };
+        setChatLog([...newChatLog, botMessage]);
+      } else {
+
+        if (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
+          // Generate table from nested object data
+          const keys = Object.keys(data);
+          const columns = Object.keys(data[keys[0]]); // assuming uniform structure
+          const rows = columns.map(column => ({
+            column,
+            values: keys.map(key => data[key][column])
+          }));
+
+          modelReply = (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                  <tr>{columns.map(column => <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {keys.map((key, rowIndex) => (
+                    <tr key={key}>
+                      {columns.map(column => (
+                        <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(data[key][column])}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        } else if (Array.isArray(data) && data.every(item => typeof item === 'object')) {
+          // Handling array of objects scenario
           const columnCount = Object.keys(data[0]).length;
           const rowCount = data.length;
-
-          // Convert to a table-like format with borders for display
           modelReply = (
             <div style={{ display: 'flex', alignItems: 'start' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -503,12 +530,9 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data === 'string') {
-          // If it's a string, display it as text and store it in the state
           modelReply = data;
-          //setStoredResponse(data);
           setIsLoading(true);
         } else {
-          // Otherwise, convert to string
           modelReply = convertToString(data);
         }
       }
@@ -558,19 +582,14 @@ function UserChat(props) {
         body: JSON.stringify(payload)
       }
     );
-
-    // Handle the response from apiCortexComplete
     if (response.ok) {
       const responseData = await response.json();
-      // Process responseData
     } else {
       console.error('Failed to complete API request:', response.statusText);
-      // Error handling
     }
   }
 
   return (
-
     <Box sx={{
       display: 'flex',
       justifyContent: 'flex-start',
