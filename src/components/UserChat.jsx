@@ -343,8 +343,6 @@ function UserChat(props) {
           modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
           setChatLog([...newChatLog, botMessage]);
-          setShowButton(false);
-          setShowExecuteButton(false);
         }
       }
     } catch (err) {
@@ -641,11 +639,11 @@ function UserChat(props) {
       }}>
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
         <div ref={endOfMessagesRef} />
-        {showButton && (
+        {/* {showButton && (
           <><Typography>Please see the details below</Typography><Button variant="contained" color="primary" onClick={handleShowResponse} sx={{ mr: 2 }}>
             {showResponse ? "Hide SQL" : "Show SQL"}
           </Button></>
-        )}
+        )} */}
         {showExecuteButton && (
           <Button variant="contained" color="primary" onClick={handleButtonClick}>
             Execute SQL
