@@ -392,6 +392,7 @@ function UserChat(props) {
   // }
 
   const handleButtonClick = async () => {
+    const userQuestion = input; 
     try {
       const url = `${sqlUrl}`;
       const payload = {
@@ -441,7 +442,7 @@ function UserChat(props) {
       console.log(data);
       setData(data);
       setOutputExecQuery(data);
-      await apiCortexComplete(data);
+      await apiCortexComplete(data, userQuestion);
 
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -564,13 +565,14 @@ function UserChat(props) {
     }
   }
 
-  const apiCortexComplete = async (execData) => {
+  const apiCortexComplete = async (execData, userQuestion) => {
     const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
       session_id: sessionId,
       user_id: user_id,
       output_exec_query: execData,
+      prompt: userQuestion 
     };
     const response = await fetch(
       url,
