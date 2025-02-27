@@ -419,7 +419,6 @@ function UserChat(props) {
       }
 
       const data = await response.json();
-      console.log(data);
       setData(data);
       setOutputExecQuery(data);
       await apiCortexComplete(data, promptQuestion);
@@ -480,10 +479,10 @@ function UserChat(props) {
           </div>
         );
       } else if (typeof data === 'string') {
-        modelReply = data;
+        modelReply = data.modelreply.response;
         setIsLoading(true);
       } else {
-        modelReply = convertToString(data);
+        modelReply = convertToString(data.modelreply.response);
       }
 
       const botMessage = {
