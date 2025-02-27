@@ -378,7 +378,7 @@ function UserChat(props) {
         aplctn_cd: aplctn_cd,
         session_id: sessionId,
         user_id: user_id,
-        exec_query: JSON.stringify(rawResponse),
+        exec_query: rawResponse,
         prompt: promptQuestion
       };
       const response = await fetch(
@@ -440,23 +440,24 @@ function UserChat(props) {
 
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
+      const modifiedData = JSON.stringify(data.modelreply.response);
 
-      if (data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.every(item => typeof item === 'object')) {
+      if (data.modelreply && Array.isArray(modifiedData) && modifiedData.every(item => typeof item === 'object')) {
         // Handling array of objects scenario from response property
-        const columnCount = Object.keys(data.modelreply.response[0]).length;
-        const rowCount = data.modelreply.response.length;
+        const columnCount = Object.keys(modifiedData[0]).length;
+        const rowCount = modifiedData.length;
         modelReply = (
           <div style={{ display: 'flex', alignItems: 'start' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr>
-                  {Object.keys(data.modelreply.response[0]).map((key) => (
+                  {Object.keys(modifiedData[0]).map((key) => (
                     <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {data.modelreply.response.map((row, rowIndex) => (
+                {modifiedData.map((row, rowIndex) => (
                   <tr key={rowIndex}>
                     {Object.values(row).map((val, colIndex) => (
                       <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
