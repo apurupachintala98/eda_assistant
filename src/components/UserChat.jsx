@@ -394,19 +394,6 @@ function UserChat(props) {
 
   const handleButtonClick = async () => {
     try {
-      // const sanitizeQuery = (query) => {
-      //   let cleanedQuery = query
-      //     .replace(/\\n/g, ' ')      // Remove newlines
-      //     .replace(/\s+/g, ' ')     // Remove extra spaces
-      //     .replace(/--.*?;/g, '')   // Remove SQL comments
-      //     .trim();                  // Trim whitespace from start/end
-      //   return cleanedQuery;
-      // };
-  
-      // const sanitizedResponse = sanitizeQuery(rawResponse);
-      // const encodedResponse = encodeURIComponent(sanitizedResponse);
-  
-
       const url = `${sqlUrl}`;
       const payload = {
         aplctn_cd: aplctn_cd,
@@ -457,7 +444,7 @@ function UserChat(props) {
       setData(data);
       setOutputExecQuery(data);
 
-      await apiCortexComplete();
+      await apiCortexComplete(data);
 
       // Function to convert object to string
       const convertToString = (input) => {
@@ -553,13 +540,13 @@ function UserChat(props) {
     }
   }
 
-  const apiCortexComplete = async () => {
+  const apiCortexComplete = async (execData) => {
     const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
       session_id: sessionId,
       user_id: user_id,
-      output_exec_query: outputExecQuery,
+      output_exec_query: execData,
     };
     const response = await fetch(
       url,
