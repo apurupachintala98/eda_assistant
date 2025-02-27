@@ -434,38 +434,38 @@ function UserChat(props) {
             .join(', ');
         }
         return String(input);
-      };
+    };
 
 
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
-      const modifiedData = JSON.stringify(data.modelreply.response);
 
-      if (data.modelreply && Array.isArray(modifiedData) && modifiedData.every(item => typeof item === 'object')) {
+      if (data.modelreply && Array.isArray(data.modelreply.response)) {
         // Handling array of objects scenario from response property
-        const columnCount = Object.keys(modifiedData[0]).length;
-        const rowCount = modifiedData.length;
+        const columns = Object.keys(data.modelreply.response[0]);
+        const rows = data.modelreply.response;
+        
         modelReply = (
-          <div style={{ display: 'flex', alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr>
-                  {Object.keys(modifiedData[0]).map((key) => (
-                    <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                  {columns.map(column => (
+                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {modifiedData.map((row, rowIndex) => (
+                {rows.map((row, rowIndex) => (
                   <tr key={rowIndex}>
-                    {Object.values(row).map((val, colIndex) => (
-                      <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                    {columns.map(column => (
+                      <td key={column} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(row[column])}</td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-            {(rowCount > 1 && columnCount > 1) && (
+            {(rows.length > 1 && columns.length > 1) && (
               <Button
                 variant="contained"
                 color="primary"
