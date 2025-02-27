@@ -552,7 +552,7 @@ function UserChat(props) {
   }
 
   const apiCortexComplete = async () => {
-    const url = "http://10.126.192.122:8880/api_cortex_complete/";
+    const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
       session_id: sessionId,
