@@ -55,7 +55,7 @@ function renderTable(data) {
         {data.map((item, index) => (
           <tr key={index}>
             {Object.entries(item).map(([key, value], subIndex) => (
-              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}> {typeof value === 'object' ? JSON.stringify(value) : value}</td>
+              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
             ))}
           </tr>
         ))}
