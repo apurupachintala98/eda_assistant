@@ -440,11 +440,10 @@ function UserChat(props) {
       // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
-      if (data.modelreply && Array.isArray(data.modelreply.response)) {
-        // Handling array of objects scenario from response property
-        const columns = Object.keys(data.modelreply.response[0]);
+      if (data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.length > 0) {
+        const columns = Object.keys(data.modelreply.response[0] || {});
         const rows = data.modelreply.response;
-        
+    
         modelReply = (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -478,7 +477,7 @@ function UserChat(props) {
             )}
           </div>
         );
-      } else if (typeof data === 'string') {
+    } else if (typeof data === 'string') {
         modelReply = data.modelreply.response;
         setIsLoading(true);
       } else {

@@ -36,6 +36,9 @@ const formatApiResponse = (response) => {
 };
 
 function renderTable(data) {
+  if (!Array.isArray(data) || data.length === 0) {
+    return <p>No data available.</p>; // Handling the case where data is not as expected
+  }
   const headers = Object.keys(data[0] || {});
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
@@ -52,7 +55,7 @@ function renderTable(data) {
         {data.map((item, index) => (
           <tr key={index}>
             {Object.entries(item).map(([key, value], subIndex) => (
-              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
+              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}> {typeof value === 'object' ? JSON.stringify(value) : value}</td>
             ))}
           </tr>
         ))}
