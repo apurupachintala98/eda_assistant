@@ -395,16 +395,17 @@ function UserChat(props) {
   const handleButtonClick = async () => {
     try {
       const sanitizeQuery = (query) => {
-        // Example: Remove line breaks, extra spaces, and other unnecessary parts
         let cleanedQuery = query
-          .replace(/\\n/g, ' ')
-          .replace(/\s+/g, ' ')
-          .replace(/--.*?;/g, '')
-          .trim();
+          .replace(/\\n/g, ' ')      // Remove newlines
+          .replace(/\s+/g, ' ')     // Remove extra spaces
+          .replace(/--.*?;/g, '')   // Remove SQL comments
+          .trim();                  // Trim whitespace from start/end
         return cleanedQuery;
       };
-      const decodedStoredResponse = encodeURIComponent(rawResponse);
-      const encodedResponse = sanitizeQuery(decodedStoredResponse);
+  
+      const sanitizedResponse = sanitizeQuery(rawResponse);
+      const encodedResponse = encodeURIComponent(sanitizedResponse);
+  
 
       const url = `${sqlUrl}`;
       const payload = {
@@ -452,6 +453,7 @@ function UserChat(props) {
       }
 
       const data = await response.json();
+      console.log(data);
       setData(data);
       setOutputExecQuery(data);
 
