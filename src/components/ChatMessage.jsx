@@ -52,7 +52,7 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage, storedResponse }) => {
                 {/* {chat.isSQLResponse ? (
                   <pre><code className="sql" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
                 ) : ( */}
-                   chat.content
+                   {chat.content}
                 {/* )} */}
               </Typography>
               {chat.role === 'user' ? (
