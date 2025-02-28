@@ -347,6 +347,7 @@ function UserChat(props) {
         } else {
           modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply, isSQLResponse };
+          console.log(botMessage);
           setChatLog([...newChatLog, botMessage]);
         }
       }
