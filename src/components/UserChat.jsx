@@ -594,7 +594,7 @@ function UserChat(props) {
         maxHeight: '73vh',
         padding: '10px', ...customStyles.chatContainer
       }}>
-        <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} showResponse={showResponse} />
+        <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} />
         <div ref={endOfMessagesRef} />
         {showExecuteButton && (
           <Button variant="contained" color="primary" onClick={handleButtonClick}>
