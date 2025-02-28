@@ -6,11 +6,11 @@ import ChatMessage from './ChatMessage';
 import { Box, Grid, TextField, Button, IconButton, Typography, InputAdornment, Toolbar, useTheme, useMediaQuery, Modal, Backdrop, Fade } from '@mui/material';
 import ChartModal from './ChartModal';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { format as sqlFormatter } from 'sql-formatter';
 import hljs from 'highlight.js/lib/core';
 import sql from 'highlight.js/lib/languages/sql';
 import SuggestedPrompts from '../components/SuggestedPrompts';
 import Feedback from '../components/Feedback';
-import 'highlight.js/styles/github.css';
 
 hljs.registerLanguage('sql', sql);
 
@@ -274,10 +274,30 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data.response === 'string') {
+          const sqlRegex = /```sql([\s\S]*?)```/g;
+          const sqlKeywordRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i;
+          const parts = [];
+          let lastIndex = 0;
+          let match;
           let containsSQL = false;
-          const sqlKeywordRegex = /\b(SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE|GROUP BY|HAVING|ORDER BY)\b/gi;
-          let formattedResponse = data.response.replace(sqlKeywordRegex, match => `<span class='sql-keyword'>${match}</span>`);
-          modelReply = `<pre><code>${hljs.highlight(formattedResponse, { language: 'sql' }).value}</code></pre>`;
+  
+          while ((match = sqlRegex.exec(data.response)) !== null) {
+            containsSQL = true;
+            if (match.index > lastIndex) {
+              parts.push(data.response.slice(lastIndex, match.index).trim());
+            }
+            const sqlContent = match[1].trim();
+            const highlightedSql = hljs.highlight(sqlContent, { language: 'sql' }).value;
+            parts.push(`<pre><code>${highlightedSql}</code></pre>`);
+            lastIndex = sqlRegex.lastIndex;
+          }
+  
+          if (lastIndex < data.response.length) {
+            parts.push(data.response.slice(lastIndex).trim());
+          }
+  
+          modelReply = parts.join('');
+
           const raw = data.response;
           setRawResponse(raw);
           setStoredResponse(modelReply);
