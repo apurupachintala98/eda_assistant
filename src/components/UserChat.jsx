@@ -274,6 +274,7 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data.response === 'string') {
+          let containsSQL = false;
           const sqlKeywordRegex = /\b(SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE|GROUP BY|HAVING|ORDER BY)\b/gi;
           let formattedResponse = data.response.replace(sqlKeywordRegex, match => `<span class='sql-keyword'>${match}</span>`);
           modelReply = `<pre><code>${hljs.highlight(formattedResponse, { language: 'sql' }).value}</code></pre>`;
