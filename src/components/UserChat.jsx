@@ -138,7 +138,7 @@ function UserChat(props) {
     setError(''); // Clear any previous error
     setShowInitialView(false);
     setShowResponse(false);
-    setShowButton(false);
+    // setShowButton(false);
     setShowExecuteButton(false);
     try {
       const url = `${apiPath}`;
@@ -339,7 +339,7 @@ function UserChat(props) {
           setStoredResponse(modelReply);
 
           // Set button visibility based on the presence of SQL
-          setShowButton(containsSQL);
+          // setShowButton(containsSQL);
           setShowExecuteButton(containsSQL);
         } else {
           modelReply = convertToString(data.response);
@@ -470,7 +470,7 @@ function UserChat(props) {
             color="primary"
             startIcon={<BarChartIcon />}
             sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
-            onClick={() => console.log('Graph View Clicked')}
+            onClick={() => handleGraphClick()}
           >
             Graph View
           </Button>
@@ -507,7 +507,7 @@ function UserChat(props) {
     } finally {
       setIsLoading(false);// Set loading state to false
       setShowExecuteButton(false);
-      setShowButton(false);
+      // setShowButton(false);
     }
   }
 
