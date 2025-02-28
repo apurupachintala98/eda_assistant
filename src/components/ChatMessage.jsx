@@ -188,7 +188,7 @@ function formatApiResponse(response) {
           property: key,
           value: response[key]
       }));
-      return renderTableFromArrayObject(arrayFromObject);
+      return renderTableFromObject(arrayFromObject);
   }
 
   // Fallback for any other type
@@ -197,59 +197,93 @@ function formatApiResponse(response) {
 
 
 function renderTable(data) {
-  if (!data || data.length === 0) {
-      return <p>No data available.</p>;
+  if (!data || !data.length) {
+    return <p>No data available.</p>;
   }
 
-  const headers = Object.keys(data[0]);
+  // Ensure all objects have the same keys for column headers
+  const headers = data.reduce((acc, obj) => {
+    Object.keys(obj).forEach(key => {
+      if (!acc.includes(key)) acc.push(key);
+    });
+    return acc;
+  }, []);
+
   return (
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-          <thead>
-              <tr>
-                  {headers.map(header => (
-                      <th key={header} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
-                          {header}
-                      </th>
-                  ))}
-              </tr>
-          </thead>
-          <tbody>
-              {data.map((row, index) => (
-                  <tr key={index}>
-                      {headers.map(header => (
-                          <td key={`${header}-${index}`} style={{ border: '1px solid black', padding: '8px' }}>
-                              {typeof row[header] === 'object' ? JSON.stringify(row[header]) : row[header]}
-                          </td>
-                      ))}
-                  </tr>
-              ))}
-          </tbody>
-      </table>
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr>
+          {headers.map(header => (
+            <th key={header} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((row, index) => (
+          <tr key={index}>
+            {headers.map(header => (
+              <td key={`${header}-${index}`} style={{ border: '1px solid black', padding: '8px' }}>
+                {typeof row[header] === 'object' ? JSON.stringify(row[header], null, 2) : row[header]}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
-function renderTableFromArrayObject(data) {
+
+function renderTableFromObject(data) {
+  // First, check if data is empty or not an object
+  if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+    return <p>No data available.</p>;
+  }
+
+  // Determine the headers from the keys of the first property if it's an object
+  // This assumes that the object's values are either primitives or arrays/objects structured similarly
+  const firstKey = Object.keys(data)[0];
+  const headers = typeof data[firstKey] === 'object' ? Object.keys(data[firstKey]) : ['Value'];
+
   return (
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-          <thead>
-              <tr>
-                  <th style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>Property</th>
-                  <th style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>Value</th>
-              </tr>
-          </thead>
-          <tbody>
-              {data.map((item, index) => (
-                  <tr key={index}>
-                      <td style={{ border: '1px solid black', padding: '8px' }}>{item.property}</td>
-                      <td style={{ border: '1px solid black', padding: '8px' }}>
-                          {typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : item.value}
-                      </td>
-                  </tr>
-              ))}
-          </tbody>
-      </table>
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr>
+          <th style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>Property</th>
+          {headers.map(header => (
+            <th key={header} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Object.keys(data).map((key, index) => (
+          <tr key={index}>
+            <td style={{ border: '1px solid black', padding: '8px' }}>{key}</td>
+            {headers.map(header => (
+              <td key={header} style={{ border: '1px solid black', padding: '8px' }}>
+                {renderValue(data[key], header)}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
+
+// Helper function to handle various types of values
+function renderValue(item, prop) {
+  const value = item[prop];
+  if (typeof value === 'object') {
+    return JSON.stringify(value, null, 2);
+  }
+  return value || "N/A"; // Return "N/A" if the property does not exist in the item
+}
+
 
 
 function renderTextWithFormatting(text) {
