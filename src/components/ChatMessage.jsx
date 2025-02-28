@@ -2,19 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Avatar, Box, Typography, Paper } from '@mui/material';
 import chatbot from '../images/chatbot.png';
 import user from '../images/user.png';
-import hljs from 'highlight.js/lib/core';
-import sql from 'highlight.js/lib/languages/sql';
-import 'highlight.js/styles/github.css';
+// import hljs from 'highlight.js/lib/core';
+// import sql from 'highlight.js/lib/languages/sql';
+// import 'highlight.js/styles/github.css';
 
-hljs.registerLanguage('sql', sql);
+// hljs.registerLanguage('sql', sql);
 
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, storedResponse }) => {
-  useEffect(() => {
-    setTimeout(() => hljs.highlightAll(), 0);
-  }, [chatLog]);
+  // useEffect(() => {
+  //   setTimeout(() => hljs.highlightAll(), 0);
+  // }, [chatLog]);
   
-
   return (
     <Box sx={{ width: '100%', padding: '10px 0' }}>
       {chatLog.map((chat, index) => (
@@ -50,11 +49,11 @@ const ChatMessage = ({ chatLog, chatbotImage, userImage, storedResponse }) => {
                 variant="body2"
                 sx={{ fontSize: 14, fontWeight: 'bold', whiteSpace: 'pre-line' }}
               >
-                {chat.isSQLResponse ? (
+                {/* {chat.isSQLResponse ? (
                   <pre><code className="sql" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{chat.content}</code></pre>
-                ) : (
+                ) : ( */}
                    chat.content
-                )}
+                {/* )} */}
               </Typography>
               {chat.role === 'user' ? (
                 <img

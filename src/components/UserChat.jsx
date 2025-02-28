@@ -6,12 +6,11 @@ import ChatMessage from './ChatMessage';
 import { Box, Grid, TextField, Button, IconButton, Typography, InputAdornment, Toolbar, useTheme, useMediaQuery, Modal, Backdrop, Fade } from '@mui/material';
 import ChartModal from './ChartModal';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { format as sqlFormatter } from 'sql-formatter';
 import hljs from 'highlight.js/lib/core';
 import sql from 'highlight.js/lib/languages/sql';
 import SuggestedPrompts from '../components/SuggestedPrompts';
 import Feedback from '../components/Feedback';
-
+import 'highlight.js/styles/github.css';
 
 hljs.registerLanguage('sql', sql);
 
@@ -204,7 +203,6 @@ function UserChat(props) {
         const botMessage = { role: 'assistant', content: defaultReply };
         setChatLog([...newChatLog, botMessage]);
       } else {
-        let isSQLResponse = false;
         // Handling object with nested objects scenario
         if (typeof data.response === 'object' && !Array.isArray(data.response) && Object.keys(data.response).length > 0) {
           // Generate table from nested object data
@@ -276,67 +274,9 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data.response === 'string') {
-          const sqlRegex = /```sql([\s\S]*?)```/g; // Regex to detect SQL blocks in markdown format
-          const sqlKeywordRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i; // Regex to detect SQL keywords outside of blocks
-          const parts = [];
-          let lastIndex = 0;
-          let match;
-          let containsSQL = false; // Flag to track SQL content
-
-          while ((match = sqlRegex.exec(data.response)) !== null) {
-            containsSQL = true; // Set flag if SQL is detected in the block
-            if (match.index > lastIndex) {
-              parts.push(
-                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
-                  {data.response.slice(lastIndex, match.index).trim()}
-                </p>
-              );
-            }
-            const sqlContent = match[1].trim();
-            try {
-              parts.push(
-                <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
-                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {sqlFormatter(sqlContent)}
-                  </code>
-                </pre>
-              );
-            } catch (err) {
-              console.error("SQL Formatting Error:", err);
-              parts.push(
-                <pre key={`sql-${match.index}`} style={{ margin: '8px 0', color: 'red' }}>
-                  {sqlContent}
-                </pre>
-              );
-            }
-            lastIndex = sqlRegex.lastIndex;
-          }
-          if (lastIndex < data.response.length) {
-            const remainingContent = data.response.slice(lastIndex).trim();
-            if (sqlKeywordRegex.test(remainingContent)) {
-              containsSQL = true; // Set flag if SQL keywords are detected in remaining content
-              parts.push(
-                <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
-                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {sqlFormatter(remainingContent)}
-                  </code>
-                </pre>
-              );
-            } else {
-              parts.push(
-                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
-                  {remainingContent}
-                </p>
-              );
-            }
-          }
-
-          modelReply = (
-            <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
-              {parts}
-            </div>
-          );
-
+          const sqlKeywordRegex = /\b(SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE|GROUP BY|HAVING|ORDER BY)\b/gi;
+          let formattedResponse = data.response.replace(sqlKeywordRegex, match => `<span class='sql-keyword'>${match}</span>`);
+          modelReply = `<pre><code>${hljs.highlight(formattedResponse, { language: 'sql' }).value}</code></pre>`;
           const raw = data.response;
           setRawResponse(raw);
           setStoredResponse(modelReply);
@@ -346,7 +286,7 @@ function UserChat(props) {
           setShowExecuteButton(containsSQL);
         } else {
           modelReply = convertToString(data.response);
-          const botMessage = { role: 'assistant', content: modelReply, isSQLResponse };
+          const botMessage = { role: 'assistant', content: modelReply };
           console.log(botMessage);
           setChatLog([...newChatLog, botMessage]);
         }
