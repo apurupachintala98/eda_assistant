@@ -274,28 +274,69 @@ function UserChat(props) {
             </div>
           );
         } else if (typeof data.response === 'string') {
-          const sqlRegex = /```sql([\s\S]*?)```/g;
-          const sqlKeywordRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i;
+          const sqlRegex = /```sql([\s\S]*?)```/g; // Regex to detect SQL blocks in markdown format
+          const sqlKeywordRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i; // Regex to detect SQL keywords outside of blocks
           const parts = [];
           let lastIndex = 0;
           let match;
-          let containsSQL = false;
-  
+          let containsSQL = false; // Flag to track SQL content
+
           while ((match = sqlRegex.exec(data.response)) !== null) {
-            containsSQL = true;
+            containsSQL = true; // Set flag if SQL is detected in the block
             if (match.index > lastIndex) {
-              parts.push(data.response.slice(lastIndex, match.index).trim());
+              parts.push(
+                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
+                  {data.response.slice(lastIndex, match.index).trim()}
+                </p>
+              );
             }
             const sqlContent = match[1].trim();
-            const highlightedSql = hljs.highlight(sqlContent, { language: 'sql' }).value;
-            parts.push(`<pre><code>${highlightedSql}</code></pre>`);
+            try {
+              // parts.push(
+              //   <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
+              //     <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              //       {sqlFormatter(sqlContent)}
+              //     </code>
+              //   </pre>
+              // );
+              const highlightedSql = hljs.highlight(sqlContent, { language: 'sql' }).value;
+              parts.push(`<pre><code>${highlightedSql}</code></pre>`);
+            } catch (err) {
+              console.error("SQL Formatting Error:", err);
+              parts.push(
+                <pre key={`sql-${match.index}`} style={{ margin: '8px 0', color: 'red' }}>
+                  {sqlContent}
+                </pre>
+              );
+            }
             lastIndex = sqlRegex.lastIndex;
           }
-  
           if (lastIndex < data.response.length) {
-            parts.push(data.response.slice(lastIndex).trim());
+            const remainingContent = data.response.slice(lastIndex).trim();
+            if (sqlKeywordRegex.test(remainingContent)) {
+              containsSQL = true; // Set flag if SQL keywords are detected in remaining content
+              parts.push(data.response.slice(lastIndex).trim());
+              // parts.push(
+              //   <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
+              //     <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              //       {sqlFormatter(remainingContent)}
+              //     </code>
+              //   </pre>
+              // );
+            } else {
+              parts.push(
+                <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
+                  {remainingContent}
+                </p>
+              );
+            }
           }
-  
+
+          // modelReply = (
+          //   <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
+          //     {parts}
+          //   </div>
+          // );
           modelReply = parts.join('');
 
           const raw = data.response;
