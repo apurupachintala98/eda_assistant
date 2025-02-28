@@ -436,15 +436,11 @@ function UserChat(props) {
         return String(input);
     };
 
-
-      // Handle the response data similarly to handleSubmit
       let modelReply = 'No valid reply found.'; // Default message
 
       if (data && data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.length > 0) {
         const columns = Object.keys(data.modelreply.response[0]);
-        console.log(columns);
         const rows = data.modelreply.response;
-        console.log(rows);
 
         
     modelReply = (
