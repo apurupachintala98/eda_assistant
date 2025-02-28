@@ -164,20 +164,16 @@ import 'highlight.js/styles/github.css';
 
 hljs.registerLanguage('sql', sql);
 
-const formatApiResponse = (response) => {
+function formatApiResponse(response) {
   if (!response) {
       return <p>No data available</p>;
   }
+
   if (typeof response === 'string') {
       try {
-          const parsedResponse = JSON.parse(response);
-          if (Array.isArray(parsedResponse)) {
-              return renderTable(parsedResponse);  // Render as table if it's an array
-          }
-          // If parsed successfully but not an array, treat it as normal string content
-          return renderTextWithFormatting(response);
+          response = JSON.parse(response); // Attempt to parse string as JSON
       } catch (error) {
-          // If parsing fails, render it as a normal string
+          // Not JSON, return as plain text
           return renderTextWithFormatting(response);
       }
   }
@@ -185,38 +181,76 @@ const formatApiResponse = (response) => {
   if (Array.isArray(response)) {
       return renderTable(response);
   }
-  return renderTextWithFormatting(response); // Ensure non-string responses are converted to strings
-};
+
+  // If it's an object, attempt to convert to an array if it's not already
+  if (typeof response === 'object') {
+      const arrayFromObject = Object.keys(response).map(key => ({
+          property: key,
+          value: response[key]
+      }));
+      return renderTableFromArrayObject(arrayFromObject);
+  }
+
+  // Fallback for any other type
+  return renderTextWithFormatting(String(response));
+}
 
 
 function renderTable(data) {
-  if (!Array.isArray(data) || data.length === 0) {
-    return <p>No data available.</p>;
+  if (!data || data.length === 0) {
+      return <p>No data available.</p>;
   }
+
   const headers = Object.keys(data[0]);
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-      <thead>
-        <tr>
-          {headers.map((header, index) => (
-            <th key={index} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
-              {header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((item, index) => (
-          <tr key={index}>
-            {Object.entries(item).map(([key, value], subIndex) => (
-              <td key={subIndex} style={{ border: '1px solid black', padding: '8px' }}>{value}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+          <thead>
+              <tr>
+                  {headers.map(header => (
+                      <th key={header} style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>
+                          {header}
+                      </th>
+                  ))}
+              </tr>
+          </thead>
+          <tbody>
+              {data.map((row, index) => (
+                  <tr key={index}>
+                      {headers.map(header => (
+                          <td key={`${header}-${index}`} style={{ border: '1px solid black', padding: '8px' }}>
+                              {typeof row[header] === 'object' ? JSON.stringify(row[header]) : row[header]}
+                          </td>
+                      ))}
+                  </tr>
+              ))}
+          </tbody>
+      </table>
   );
 }
+
+function renderTableFromArrayObject(data) {
+  return (
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+          <thead>
+              <tr>
+                  <th style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>Property</th>
+                  <th style={{ border: '1px solid black', padding: '8px', backgroundColor: '#f0f0f0' }}>Value</th>
+              </tr>
+          </thead>
+          <tbody>
+              {data.map((item, index) => (
+                  <tr key={index}>
+                      <td style={{ border: '1px solid black', padding: '8px' }}>{item.property}</td>
+                      <td style={{ border: '1px solid black', padding: '8px' }}>
+                          {typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : item.value}
+                      </td>
+                  </tr>
+              ))}
+          </tbody>
+      </table>
+  );
+}
+
 
 function renderTextWithFormatting(text) {
   // Ensure text is a string
