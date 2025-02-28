@@ -292,15 +292,14 @@ function UserChat(props) {
             }
             const sqlContent = match[1].trim();
             try {
-              // parts.push(
-              //   <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
-              //     <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              //       {sqlFormatter(sqlContent)}
-              //     </code>
-              //   </pre>
-              // );
-              const highlightedSql = hljs.highlight(sqlContent, { language: 'sql' }).value;
-              parts.push(`<pre><code>${highlightedSql}</code></pre>`);
+              parts.push(
+                <pre key={`sql-${match.index}`} style={{ margin: '8px 0' }}>
+                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {sqlFormatter(sqlContent)}
+                  </code>
+                </pre>
+              );
+            
             } catch (err) {
               console.error("SQL Formatting Error:", err);
               parts.push(
@@ -315,14 +314,13 @@ function UserChat(props) {
             const remainingContent = data.response.slice(lastIndex).trim();
             if (sqlKeywordRegex.test(remainingContent)) {
               containsSQL = true; // Set flag if SQL keywords are detected in remaining content
-              parts.push(data.response.slice(lastIndex).trim());
-              // parts.push(
-              //   <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
-              //     <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              //       {sqlFormatter(remainingContent)}
-              //     </code>
-              //   </pre>
-              // );
+              parts.push(
+                <pre key={`sql-remaining`} style={{ margin: '8px 0' }}>
+                  <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {sqlFormatter(remainingContent)}
+                  </code>
+                </pre>
+              );
             } else {
               parts.push(
                 <p key={`text-${lastIndex}`} style={{ margin: "8px 0" }}>
@@ -332,12 +330,11 @@ function UserChat(props) {
             }
           }
 
-          // modelReply = (
-          //   <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
-          //     {parts}
-          //   </div>
-          // );
-          modelReply = parts.join('');
+          modelReply = (
+            <div style={{ overflow: "auto", maxWidth: "100%", padding: "10px" }}>
+              {parts}
+            </div>
+          );
 
           const raw = data.response;
           setRawResponse(raw);
