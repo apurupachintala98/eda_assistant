@@ -11,10 +11,7 @@ hljs.registerLanguage('sql', sql);
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, storedResponse }) => {
   useEffect(() => {
-    // This ensures that hljs.highlightAll() is called after the DOM has updated with new chat messages.
-    setTimeout(() => {
-      hljs.highlightAll();
-    }, 0);
+    setTimeout(() => hljs.highlightAll(), 0);
   }, [chatLog]);
   
 
