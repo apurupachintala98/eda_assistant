@@ -47,7 +47,6 @@ function UserChat(props) {
   const [data, setData] = useState('');
   const [rawResponse, setRawResponse] = useState('');
   const [promptQuestion, setPromptQuestion] = useState('');
-  const [showSQLButtons, setShowSQLButtons] = useState(false);
   const [outputExecQuery, setOutputExecQuery] = useState('');
 
 
@@ -344,7 +343,7 @@ function UserChat(props) {
           setShowExecuteButton(containsSQL);
         } else {
           modelReply = convertToString(data.response);
-          const botMessage = { role: 'assistant', content: modelReply, isSQLResponse, };
+          const botMessage = { role: 'assistant', content: modelReply, isSQLResponse };
           setChatLog([...newChatLog, botMessage]);
         }
       }
@@ -419,7 +418,7 @@ function UserChat(props) {
       }
 
       const data = await response.json();
-      setData(data);
+      setData(data.modelreply.response);
       setOutputExecQuery(data);
       await apiCortexComplete(data, promptQuestion);
 
