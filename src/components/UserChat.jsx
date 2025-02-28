@@ -198,13 +198,13 @@ function UserChat(props) {
         }
         return String(input);
       };
-      let isSQLResponse = false;
       let modelReply = 'No valid reply found.'; // Default message
       if (!data.response) {
         const defaultReply = json.modelreply || 'Internal server error.';
         const botMessage = { role: 'assistant', content: defaultReply };
         setChatLog([...newChatLog, botMessage]);
       } else {
+        let isSQLResponse = false;
         // Handling object with nested objects scenario
         if (typeof data.response === 'object' && !Array.isArray(data.response) && Object.keys(data.response).length > 0) {
           // Generate table from nested object data
