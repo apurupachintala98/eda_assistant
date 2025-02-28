@@ -166,27 +166,28 @@ hljs.registerLanguage('sql', sql);
 
 const formatApiResponse = (response) => {
   if (!response) {
-    return <p>No data available</p>;
+      return <p>No data available</p>;
   }
   if (typeof response === 'string') {
-    try {
-      const parsedResponse = JSON.parse(response);
-      if (Array.isArray(parsedResponse)) {
-        return renderTable(parsedResponse);  // Render as table if it's an array
+      try {
+          const parsedResponse = JSON.parse(response);
+          if (Array.isArray(parsedResponse)) {
+              return renderTable(parsedResponse);  // Render as table if it's an array
+          }
+          // If parsed successfully but not an array, treat it as normal string content
+          return renderTextWithFormatting(response);
+      } catch (error) {
+          // If parsing fails, render it as a normal string
+          return renderTextWithFormatting(response);
       }
-      // If parsed successfully but not an array, treat it as normal string content
-      return renderTextWithFormatting(response);
-    } catch (error) {
-      // If parsing fails, render it as a normal string, assume it's not JSON
-      return renderTextWithFormatting(response);
-    }
   }
 
   if (Array.isArray(response)) {
-    return renderTable(response);
+      return renderTable(response);
   }
-  return renderTextWithFormatting(response);
+  return renderTextWithFormatting(response); // Ensure non-string responses are converted to strings
 };
+
 
 function renderTable(data) {
   if (!Array.isArray(data) || data.length === 0) {
@@ -218,27 +219,34 @@ function renderTable(data) {
 }
 
 function renderTextWithFormatting(text) {
+  // Ensure text is a string
+  if (typeof text !== 'string') {
+      text = String(text);
+  }
+
   const urlRegex = /(\bhttps?:\/\/\S+\b)/g; // Regex to detect URLs
+
   return (
-    <div>
-      {text.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
-        if (part.match(/^\*\*.*\*\*$/)) {
-          // Bold text marked by double asterisks
-          return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
-        }
-        if (urlRegex.test(part)) {
-          // Splitting and linking URLs
-          return part.split(urlRegex).map((subpart, subIndex) => (
-            urlRegex.test(subpart) ? 
-            <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
-            subpart
-          ));
-        }
-        return part;
-      })}
-    </div>
+      <div>
+          {text.split(/(\*\*.*?\*\*)/g).flatMap((part, index) => {
+              if (part.match(/^\*\*.*\*\*$/)) {
+                  // Bold text marked by double asterisks
+                  return [<b key={index}>{part.replace(/\*\*/g, '')}</b>];
+              }
+              if (urlRegex.test(part)) {
+                  // Splitting and linking URLs
+                  return part.split(urlRegex).map((subpart, subIndex) => (
+                      urlRegex.test(subpart) ? 
+                      <a key={`${index}-${subIndex}`} href={subpart} target="_blank" rel="noopener noreferrer">{subpart}</a> : 
+                      subpart
+                  ));
+              }
+              return part;
+          })}
+      </div>
   );
 }
+
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, showResponse, storedResponse }) => {
   useEffect(() => {
