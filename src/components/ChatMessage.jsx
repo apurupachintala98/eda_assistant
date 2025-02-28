@@ -11,8 +11,12 @@ hljs.registerLanguage('sql', sql);
 
 const ChatMessage = ({ chatLog, chatbotImage, userImage, storedResponse }) => {
   useEffect(() => {
-    hljs.highlightAll();
+    // This ensures that hljs.highlightAll() is called after the DOM has updated with new chat messages.
+    setTimeout(() => {
+      hljs.highlightAll();
+    }, 0);
   }, [chatLog]);
+  
 
   return (
     <Box sx={{ width: '100%', padding: '10px 0' }}>

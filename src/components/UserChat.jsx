@@ -138,7 +138,6 @@ function UserChat(props) {
     setError(''); // Clear any previous error
     setShowInitialView(false);
     setShowResponse(false);
-    // setShowButton(false);
     setShowExecuteButton(false);
     try {
       const url = `${apiPath}`;
@@ -200,7 +199,6 @@ function UserChat(props) {
         return String(input);
       };
       let isSQLResponse = false;
-      const sqlRegex = /SELECT|FROM|WHERE|JOIN|INSERT|UPDATE|DELETE/i;
       let modelReply = 'No valid reply found.'; // Default message
       if (!data.response) {
         const defaultReply = json.modelreply || 'Internal server error.';
@@ -239,21 +237,26 @@ function UserChat(props) {
           // Handling array of objects scenario
           const columnCount = Object.keys(data.response[0]).length;
           const rowCount = data.response.length;
+          const columns = Object.keys(data.modelreply.response[0]);
+          const rows = data.modelreply.response;
+
           modelReply = (
             <div style={{ display: 'flex', alignItems: 'start' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>
                   <tr>
-                    {Object.keys(data.response[0]).map((key) => (
-                      <th key={key} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{key}</th>
+                    {columns.map(column => (
+                      <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {data.response.map((row, rowIndex) => (
+                  {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                      {Object.values(row).map((val, colIndex) => (
-                        <td key={colIndex} style={{ border: '1px solid black', padding: '8px' }}>{convertToString(val)}</td>
+                      {columns.map(column => (
+                        <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
+                          {convertToString(row[column])}
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -433,7 +436,7 @@ function UserChat(props) {
             .join(', ');
         }
         return String(input);
-    };
+      };
 
       let modelReply = 'No valid reply found.'; // Default message
 
@@ -441,43 +444,43 @@ function UserChat(props) {
         const columns = Object.keys(data.modelreply.response[0]);
         const rows = data.modelreply.response;
 
-        
-    modelReply = (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              {columns.map(column => (
-                <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {columns.map(column => (
-                  <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
-                    {convertToString(row[column])}
-                  </td>
+
+        modelReply = (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <thead>
+                <tr>
+                  {columns.map(column => (
+                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {columns.map(column => (
+                      <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
+                        {convertToString(row[column])}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {(rows.length > 1 && columns.length > 1) && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<BarChartIcon />}
-            sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
-            onClick={() => handleGraphClick()}
-          >
-            Graph View
-          </Button>
-        )}
-      </div>
-    );
-    } else if (typeof data === 'string') {
+              </tbody>
+            </table>
+            {(rows.length > 1 && columns.length > 1) && (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<BarChartIcon />}
+                sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
+                onClick={() => handleGraphClick()}
+              >
+                Graph View
+              </Button>
+            )}
+          </div>
+        );
+      } else if (typeof data === 'string') {
         modelReply = data.modelreply.response;
         setIsLoading(true);
       } else {
