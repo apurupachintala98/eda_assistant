@@ -423,7 +423,7 @@ function UserChat(props) {
       const data = await response.json();
       setData(data.modelreply.response);
       setOutputExecQuery(data);
-      await apiCortexComplete(data, promptQuestion);
+      await apiCortexComplete(data, promptQuestion, setChatLog);
 
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -514,7 +514,7 @@ function UserChat(props) {
     }
   }
 
-  const apiCortexComplete = async (execData, promptQuestion) => {
+  const apiCortexComplete = async (execData, promptQuestion, setChatLog) => {
     const url = "http://10.126.192.122:8880/api/cortex/complete/";
     const payload = {
       aplctn_cd: aplctn_cd,
@@ -535,9 +535,19 @@ function UserChat(props) {
     );
     if (response.ok) {
       const responseData = await response.json();
-      console.log(responseData);
+      const modelReply = responseData.modelreply.response;
+      const botMessage = {
+        role: 'assistant',
+        content: modelReply
+      };
+      setChatLog(prevChatLog => [...prevChatLog, botMessage]);
     } else {
-      console.error('Failed to complete API request:', response.statusText);
+      console.error('Failed to complete API request:', error);
+      const errorBotMessage = {
+        role: 'assistant',
+        content: 'An error occurred while processing your request.'
+      };
+      setChatLog(prevChatLog => [...prevChatLog, errorBotMessage]);
     }
   }
 
