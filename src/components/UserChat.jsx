@@ -423,7 +423,6 @@ function UserChat(props) {
       const data = await response.json();
       setData(data.modelreply.response);
       setOutputExecQuery(data);
-      await apiCortexComplete(data, promptQuestion, setChatLog);
 
       const convertToString = (input) => {
         if (typeof input === 'string') {
@@ -493,6 +492,8 @@ function UserChat(props) {
       };
 
       setChatLog((prevChatLog) => [...prevChatLog, botMessage]); // Update chat log with assistant's message
+      await apiCortexComplete(data, promptQuestion, setChatLog);
+
     } catch (err) {
       // Handle network errors or other unexpected issues
       const fallbackErrorMessage = 'Error communicating with backend.';
