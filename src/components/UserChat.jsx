@@ -535,6 +535,7 @@ function UserChat(props) {
     );
     if (response.ok) {
       const responseData = await response.json();
+      console.log(responseData);
     } else {
       console.error('Failed to complete API request:', response.statusText);
     }
