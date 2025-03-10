@@ -610,11 +610,11 @@ function UserChat(props) {
       }}>
         <ChatMessage chatLog={chatLog} chatbotImage={chatbotImage} userImage={userImage} storedResponse={storedResponse} />
         <div ref={endOfMessagesRef} />
-        {showExecuteButton && (
+        {/* {showExecuteButton && (
           <Button variant="contained" color="primary" onClick={handleButtonClick}>
             Execute SQL
           </Button>
-        )}
+        )} */}
         {isLoading && <HashLoader color={themeColor} size={30} aria-label="Loading Spinner" data-testid="loader" />}
         {responseReceived &&
           <Feedback
