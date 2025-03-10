@@ -3,7 +3,7 @@
     "title": "Chat Assistant",
     "newChatButtonLabel": "New Chat",
     "apiPaths": {
-        "getResponse": "http://10.126.192.122:8880/api/cortex/analyst/",
+        "getResponse": "http://10.126.192.122:8880/api/cortex/complete/",
         "feedback": "http://10.126.192.122:8100/update_feedback/",
         "sqlUrl": "http://10.126.192.122:8880/run_sql_query/"
     },
