@@ -136,8 +136,8 @@ function UserChat(props) {
     setIsLoading(true); // Set loading state
     setError(''); // Clear any previous error
     setShowInitialView(false);
-    setShowResponse(false);
-    setShowExecuteButton(false);
+    // setShowResponse(false);
+    // setShowExecuteButton(false);
     try {
       const url = `${apiPath}`;
       const payload = {
@@ -338,11 +338,11 @@ function UserChat(props) {
 
           const raw = data.response;
           setRawResponse(raw);
-          setStoredResponse(modelReply);
+          // setStoredResponse(modelReply);
 
           // Set button visibility based on the presence of SQL
           // setShowButton(containsSQL);
-          setShowExecuteButton(containsSQL);
+          // setShowExecuteButton(containsSQL);
         } else {
           modelReply = convertToString(data.response);
           const botMessage = { role: 'assistant', content: modelReply };
@@ -373,184 +373,184 @@ function UserChat(props) {
     handleMessageSubmit(prompt, true);
   };
 
-  const handleButtonClick = async () => {
-    try {
-      const url = `${sqlUrl}`;
-      const payload = {
-        aplctn_cd: aplctn_cd,
-        session_id: sessionId,
-        user_id: user_id,
-        exec_query: rawResponse,
-        prompt: promptQuestion
-      };
-      const response = await fetch(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
-        }
-      );
+  // const handleButtonClick = async () => {
+  //   try {
+  //     const url = `${sqlUrl}`;
+  //     const payload = {
+  //       aplctn_cd: aplctn_cd,
+  //       session_id: sessionId,
+  //       user_id: user_id,
+  //       exec_query: rawResponse,
+  //       prompt: promptQuestion
+  //     };
+  //     const response = await fetch(
+  //       url,
+  //       {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify(payload)
+  //       }
+  //     );
 
-      // Check if response is okay
-      if (!response.ok) {
-        let errorMessage = '';
-        // Handle different status codes
-        if (response.status === 404) {
-          errorMessage = '404 - Not Found';
-        } else if (response.status === 500) {
-          errorMessage = '500 - Internal Server Error';
-        } else {
-          errorMessage = `${response.status} - ${response.statusText}`;
-        }
+  //     // Check if response is okay
+  //     if (!response.ok) {
+  //       let errorMessage = '';
+  //       // Handle different status codes
+  //       if (response.status === 404) {
+  //         errorMessage = '404 - Not Found';
+  //       } else if (response.status === 500) {
+  //         errorMessage = '500 - Internal Server Error';
+  //       } else {
+  //         errorMessage = `${response.status} - ${response.statusText}`;
+  //       }
 
-        // Create an error message object
-        const errorMessageContent = {
-          role: 'assistant',
-          content: (
-            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-              <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{errorMessage}</p>
-            </div>
-          ),
-        };
+  //       // Create an error message object
+  //       const errorMessageContent = {
+  //         role: 'assistant',
+  //         content: (
+  //           <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+  //             <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{errorMessage}</p>
+  //           </div>
+  //         ),
+  //       };
 
-        setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]);
-        throw new Error(errorMessage);
-      }
+  //       setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]);
+  //       throw new Error(errorMessage);
+  //     }
 
-      const data = await response.json();
-      setData(data.modelreply.response);
-      setOutputExecQuery(data);
+  //     const data = await response.json();
+  //     setData(data.modelreply.response);
+  //     setOutputExecQuery(data);
 
-      const convertToString = (input) => {
-        if (typeof input === 'string') {
-          return input;
-        } else if (Array.isArray(input)) {
-          return input.map(convertToString).join(', ');
-        } else if (typeof input === 'object' && input !== null) {
-          return Object.entries(input)
-            .map(([key, value]) => `${key}: ${convertToString(value)}`)
-            .join(', ');
-        }
-        return String(input);
-      };
+  //     const convertToString = (input) => {
+  //       if (typeof input === 'string') {
+  //         return input;
+  //       } else if (Array.isArray(input)) {
+  //         return input.map(convertToString).join(', ');
+  //       } else if (typeof input === 'object' && input !== null) {
+  //         return Object.entries(input)
+  //           .map(([key, value]) => `${key}: ${convertToString(value)}`)
+  //           .join(', ');
+  //       }
+  //       return String(input);
+  //     };
 
-      let modelReply = 'No valid reply found.'; // Default message
+  //     let modelReply = 'No valid reply found.'; // Default message
 
-      if (data && data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.length > 0) {
-        const columns = Object.keys(data.modelreply.response[0]);
-        const rows = data.modelreply.response;
+  //     if (data && data.modelreply && Array.isArray(data.modelreply.response) && data.modelreply.response.length > 0) {
+  //       const columns = Object.keys(data.modelreply.response[0]);
+  //       const rows = data.modelreply.response;
 
 
-        modelReply = (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>
-                  {columns.map(column => (
-                    <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {columns.map(column => (
-                      <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
-                        {convertToString(row[column])}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {(rows.length > 1 && columns.length > 1) && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<BarChartIcon />}
-                sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
-                onClick={() => handleGraphClick()}
-              >
-                Graph View
-              </Button>
-            )}
-          </div>
-        );
-      } else if (typeof data === 'string') {
-        modelReply = data.modelreply.response;
-        setIsLoading(true);
-      } else {
-        modelReply = convertToString(data.modelreply.response);
-      }
+  //       modelReply = (
+  //         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+  //           <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+  //             <thead>
+  //               <tr>
+  //                 {columns.map(column => (
+  //                   <th key={column} style={{ border: '1px solid black', padding: '8px', textAlign: 'left' }}>{column}</th>
+  //                 ))}
+  //               </tr>
+  //             </thead>
+  //             <tbody>
+  //               {rows.map((row, rowIndex) => (
+  //                 <tr key={rowIndex}>
+  //                   {columns.map(column => (
+  //                     <td key={`${rowIndex}-${column}`} style={{ border: '1px solid black', padding: '8px' }}>
+  //                       {convertToString(row[column])}
+  //                     </td>
+  //                   ))}
+  //                 </tr>
+  //               ))}
+  //             </tbody>
+  //           </table>
+  //           {(rows.length > 1 && columns.length > 1) && (
+  //             <Button
+  //               variant="contained"
+  //               color="primary"
+  //               startIcon={<BarChartIcon />}
+  //               sx={{ marginTop: '15px', fontSize: '0.875rem', fontWeight: 'bold' }}
+  //               onClick={() => handleGraphClick()}
+  //             >
+  //               Graph View
+  //             </Button>
+  //           )}
+  //         </div>
+  //       );
+  //     } else if (typeof data === 'string') {
+  //       modelReply = data.modelreply.response;
+  //       setIsLoading(true);
+  //     } else {
+  //       modelReply = convertToString(data.modelreply.response);
+  //     }
 
-      const botMessage = {
-        role: 'assistant',
-        content: modelReply,
-      };
+  //     const botMessage = {
+  //       role: 'assistant',
+  //       content: modelReply,
+  //     };
 
-      setChatLog((prevChatLog) => [...prevChatLog, botMessage]); // Update chat log with assistant's message
-      await apiCortexComplete(data, promptQuestion, setChatLog);
+  //     setChatLog((prevChatLog) => [...prevChatLog, botMessage]); // Update chat log with assistant's message
+  //     // await apiCortexComplete(data, promptQuestion, setChatLog);
 
-    } catch (err) {
-      // Handle network errors or other unexpected issues
-      const fallbackErrorMessage = 'Error communicating with backend.';
-      const errorMessageContent = {
-        role: 'assistant',
-        content: (
-          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{fallbackErrorMessage}</p>
-          </div>
-        ),
-      };
+  //   } catch (err) {
+  //     // Handle network errors or other unexpected issues
+  //     const fallbackErrorMessage = 'Error communicating with backend.';
+  //     const errorMessageContent = {
+  //       role: 'assistant',
+  //       content: (
+  //         <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+  //           <p style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>{fallbackErrorMessage}</p>
+  //         </div>
+  //       ),
+  //     };
 
-      setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
-      console.error('Error:', err); // Log the error for debugging
-    } finally {
-      setIsLoading(false);// Set loading state to false
-      setShowExecuteButton(false);
-      // setShowButton(false);
-    }
-  }
+  //     setChatLog((prevChatLog) => [...prevChatLog, errorMessageContent]); // Update chat log with assistant's error message
+  //     console.error('Error:', err); // Log the error for debugging
+  //   } finally {
+  //     setIsLoading(false);// Set loading state to false
+  //     setShowExecuteButton(false);
+  //     // setShowButton(false);
+  //   }
+  // }
 
-  const apiCortexComplete = async (execData, promptQuestion, setChatLog) => {
-    const url = "http://10.126.192.122:8880/api/cortex/complete/";
-    const payload = {
-      aplctn_cd: aplctn_cd,
-      session_id: sessionId,
-      user_id: user_id,
-      output_exec_query: execData,
-      prompt: promptQuestion
-    };
-    const response = await fetch(
-      url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-    if (response.ok) {
-      const responseData = await response.json();
-      const modelReply = responseData.modelreply.response;
-      const botMessage = {
-        role: 'assistant',
-        content: modelReply
-      };
-      setChatLog(prevChatLog => [...prevChatLog, botMessage]);
-    } else {
-      console.error('Failed to complete API request:', error);
-      const errorBotMessage = {
-        role: 'assistant',
-        content: 'An error occurred while processing your request.'
-      };
-      setChatLog(prevChatLog => [...prevChatLog, errorBotMessage]);
-    }
-  }
+  // const apiCortexComplete = async (execData, promptQuestion, setChatLog) => {
+  //   const url = "http://10.126.192.122:8880/api/cortex/complete/";
+  //   const payload = {
+  //     aplctn_cd: aplctn_cd,
+  //     session_id: sessionId,
+  //     user_id: user_id,
+  //     output_exec_query: execData,
+  //     prompt: promptQuestion
+  //   };
+  //   const response = await fetch(
+  //     url,
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(payload)
+  //     }
+  //   );
+  //   if (response.ok) {
+  //     const responseData = await response.json();
+  //     const modelReply = responseData.modelreply.response;
+  //     const botMessage = {
+  //       role: 'assistant',
+  //       content: modelReply
+  //     };
+  //     setChatLog(prevChatLog => [...prevChatLog, botMessage]);
+  //   } else {
+  //     console.error('Failed to complete API request:', error);
+  //     const errorBotMessage = {
+  //       role: 'assistant',
+  //       content: 'An error occurred while processing your request.'
+  //     };
+  //     setChatLog(prevChatLog => [...prevChatLog, errorBotMessage]);
+  //   }
+  // }
 
   return (
     <Box sx={{
