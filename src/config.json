@@ -3,9 +3,9 @@
     "title": "Chat Assistant",
     "newChatButtonLabel": "New Chat",
     "apiPaths": {
-        "getResponse": "http://10.126.192.122:8230/api/cortex/complete/",
+        "getResponse": "http://10.126.192.122:8130/api/cortex/complete/",
         "feedback": "http://10.126.192.122:8100/update_feedback/",
-        "sqlUrl": "http://10.126.192.122:8230/run_sql_query/"
+        "sqlUrl": "http://10.126.192.122:8130/run_sql_query/"
     },
     "aplctn_cd": "edagnai",
     "user_id": "abc1234",
