@@ -42,7 +42,7 @@ function UserChat(props) {
   const INACTIVITY_TIME = 10 * 60 * 1000;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedResponse, setStoredResponse] = useState(''); // New state to store the response
-  const [showResponse, setShowResponse] = useState(false);
+  // const [showResponse, setShowResponse] = useState(false);
   const [data, setData] = useState('');
   const [rawResponse, setRawResponse] = useState('');
   const [promptQuestion, setPromptQuestion] = useState('');
